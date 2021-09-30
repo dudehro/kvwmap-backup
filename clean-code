@@ -1,0 +1,17 @@
+* Entität
+** struct mit Interfaces
+
+  kennt nicht
+     
+     / \
+      |
+      |
+    kennt
+
+* Use Cases
+** CRUD for JSON
+** JSON En-/Decoder
+
+* Interface Adapter
+** HTTP-Server für GUI
+

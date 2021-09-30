@@ -40,8 +40,9 @@
       "type": "integer"
     },
     "tar": {
+      "title":"tar",
       "type": "array",
-      "items": [
+      "prefixItems": [
         {
           "tar_item": {
             "type": "object",
@@ -64,8 +65,9 @@
       ]
     },
     "mysql_dump": {
+      "titel":"mysql_dump",
       "type": "array",
-      "items": [
+      "prefixItems": [
         {
           "mysql_dump_item": {
             "type": "object",
@@ -94,8 +96,9 @@
       ]
     },
     "pg_dump": {
+      "titel":"pg_dump",
       "type": "array",
-      "items": [
+      "prefixItems": [
         {
           "pg_dump_item": {
             "type": "object",
@@ -157,8 +160,9 @@
       ]
     },
     "pg_dumpall": {
+      "titel":"pg_dumpall",
       "type": "array",
-      "items": [
+      "prefixItems": [
         {
           "pg_dumpall_item": {
             "type": "object",
@@ -190,8 +194,9 @@
       ]
     },
     "rsync": {
+      "titel":"rsync",
       "type": "array",
-      "items": [
+      "prefixItems": [
         {
           "rsync_item": {
             "type": "object",

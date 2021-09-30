@@ -44,6 +44,13 @@
 #   #2021_09_16         1. Bug in sichere_dir_als_targz() auch wenn keine diff.Sicherung definiert ist, wird bei vorhandenem tar.difflog eine gemacht
 #                       2. delete_diff_tarlog() nur ausführen wenn diff.Sicherung konfiguriert
 #                       3. ps Optionen -o fsavail,fsuse%  entfernt für Abwärtskompatibilität
+#   #2021_09_21         1. tar exclude wird mit eval expandiert
+#                       2. Logik für diff.Sicherungen angepasst
+#                       3. .pg_dump[].docker_network kann auch leer // empty sein
+#   #2021_09_24         1. sichere_dir_als_targz() diff.Sicherung nur bei Verzeichnissen
+#                       2. mysql-PW nicht im Debug-Modus ausgeben
+#                       3. doppelte Log-Eintrage in sichere_dir_als_targz() entfernt
+#   #2021_09_28         1. dump_mysql() falscher Pfad $mysql_data_dir
 #########################################################
 
 #########################################################
@@ -150,16 +157,23 @@ sichere_dir_als_targz() {
     delete_diff_tarlog $source
 
     if [ -n "$tar_exclude" ]; then
-        tar_exclude="--exclude="$tar_exclude
+        tar_exclude=$(eval echo --exclude=$tar_exclude)
     fi
 
     #tar.difflog vorhanden und diff.Sicherung konfiguriert?
-    if [ -f "$source/$tarlog" ] && [ -n "$diff_duration" ];  then
-        mtime=$(stat -c "%y" "$source/$tarlog")
-        cp "$source/$tarlog" "$source/$tarlog"_tmp
-        dbg "Tarlog gefunden, mtime=$mtime"
+#    if [ -f "$source/$tarlog" ] && [ -n "$diff_duration" ];  then
+    if [ -n "$diff_duration" ];  then
+        if [ -f "$source/$tarlog" ]; then
+            mtime=$(stat -c "%y" "$source/$tarlog")
+            cp "$source/$tarlog" "$source/$tarlog"_tmp
+            dbg "Tarlog gefunden, mtime=$mtime"
+        fi
 
-        tar $tar_exclude -cf $target -g $source/$tarlog $source > /dev/null 2>> "$LOGFILE"
+        if [ -f "$source" ]; then
+          tar $tar_exclude -cf $target $source > /dev/null 2>> "$LOGFILE"
+        else
+          tar $tar_exclude -cf $target -g $source/$tarlog $source > /dev/null 2>> "$LOGFILE"
+        fi
 
         if [[ $? -eq 0 ]]; then
             echo "Verzeichnis $source nach $target gesichert" >> "$LOGFILE"
@@ -179,14 +193,12 @@ sichere_dir_als_targz() {
         dbg "Kein Tarlog, Vollsicherung"
 
         echo "Sichere Verzeichnis $source nach $target" >> "$LOGFILE"
+        echo "tar $tar_exclude -cf $target $source"
         tar $tar_exclude -cf $target $source > /dev/null 2>> "$LOGFILE"
 
     fi
 
-    if [[ $? -eq 0 ]]; then
-        echo "Verzeichnis $source nach $target gesichert" >> "$LOGFILE"
-    else
-        echo "Verzeichnis $source konnte nicht gesichert werden" >> "$LOGFILE"
+    if [[ $? -ne 0 ]]; then
         return 1
     fi
     dbg "leaving sichere_dir_als_targz"
@@ -198,7 +210,7 @@ dump_pg() {
     local container_id=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].container_id")
     local db_user=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].db_user")
     local target_name=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].target_name")
-    local docker_network=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].docker_network")
+    local docker_network=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].docker_network // empty")
 
 #    local pg_dump_inserts=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].pg_dump_inserts")
 #    local pg_dump_column_inserts=$(cat $CONFIG_FILE | jq -r ".pg_dump[$1].pg_dump_column_inserts")
@@ -239,9 +251,8 @@ dump_mysql() {
     dbg "entering dump_mysql $1"
     local db_name=$(cat $CONFIG_FILE | jq -r ".mysql_dump[$1].db_name")
     local target_name=$(cat $CONFIG_FILE | jq -r ".mysql_dump[$1].target_name")
-    container_id=$(cat $CONFIG_FILE | jq -r ".mysql_dump[$1].container_id")
-#    local mysql_dump_parameter=$(cat $CONFIG_FILE | jq ".mysql_dump[$1].mysql_dump_parameter")
-    docker_network=$(cat $CONFIG_FILE | jq -r ".mysql_dump[$1].docker_network // empty")
+    local container_id=$(cat $CONFIG_FILE | jq -r ".mysql_dump[$1].container_id")
+    local docker_network=$(cat $CONFIG_FILE | jq -r ".mysql_dump[$1].docker_network // empty")
 
     dbg "db_name=$db_name"
     dbg "target_name=$target_name"
@@ -255,7 +266,7 @@ dump_mysql() {
     else
         dbg "mit Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{json .}}" $container_id | jq -r ".NetworkSettings.Networks.${docker_network}.IPAddress")
-        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/mysql/data
+        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/mysql/
     fi
 
     if [ -f "$APPS_DIR"/"$PROD_APP"/credentials.php ]; then
@@ -265,7 +276,7 @@ dump_mysql() {
 
         dbg "mysql_host=$mysql_host"
         dbg "MYSQLUSER=$MYSQLUSER"
-        dbg "MYSQLPW=$MYSQLPW"
+#        dbg "MYSQLPW=$MYSQLPW"
 
         docker exec "$container_id" bash -c "mysqldump -h $mysql_host --single-transaction --user=$MYSQLUSER --databases $db_name --password=\"$MYSQLPW\" > /var/lib/mysql/$target_name" 2>> "$LOGFILE"
 
