@@ -1,0 +1,14 @@
+* Anforderung
+** Dateien/Ordner von Sicherungen ausschließen
+** Plaintext-JSON anzeigen
+
+* REST-API Domänen
+** /backup/{datum}
+** /backup-config/{name}
+** /backup-confg/{name}/
+** /backup-confg/{name}/tar/{id}
+** /backup-confg/{name}/rsync/{id}
+** /backup-confg/{name}/mysql-dump/{id}
+** /backup-confg/{name}/pgsql-dump/{id}
+** /backup-confg/{name}/pgsql-dumpall/{id}
+
