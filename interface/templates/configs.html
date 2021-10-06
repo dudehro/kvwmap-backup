@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sicherungen</title>
+	</head>
+
+	<body>
+		<ul>
+			{{range $val := .}}
+				<li><a href="/backup_config/{{$val}}">{{$val}}</a></li>
+			{{end}}
+		</ul>
+	</body>
+</html>

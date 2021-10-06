@@ -7,10 +7,10 @@ import (
 	"log"
 )
 
-func Load_json(){
-	content, err := ioutil.ReadFile("./sicherung.json")
+func Load_backup_config(file string) *json_struct.GdiBackup {
+	content, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatal("Fehler beim öffnen: ",err)
+		log.Fatal("Fehler beim öffnen: ", err)
 	}
 
 	var payload json_struct.GdiBackup
@@ -18,11 +18,9 @@ func Load_json(){
        	if err != nil {
 		log.Fatal("Fehler beim unmarshalen: ", err)
 	}
-
-
-	log.Printf("Erfolg")
+//	log.Printf("Erfolg")
+	return &payload
 }
 
 func Write_json(j *json_struct.GdiBackup){
-
 }

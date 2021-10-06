@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+      	<head>
+                <title>Sicherungen</title>
+	</head>
+
+        <body>
+		<h1>Sicherung</h1>
+		<h2>{{.Name}}</h1>
+		<p>Sicherungsverzeichnus: {{.BackupPath}}</p>
+		<p>Sicherungsordner: {{.BackupFolder}}</p>
+		<p>{{.Beschreibung}}</p>
+		<p>Croninterval: {{.CronInterval}}</p>
+		<p>alte Sicherungen löschen nach {{.DeleteAfterNDays}} Tagen</p>
+		<p>differenzielle Sicherung für {{.DifferentialBackupDuration}} Tage</p>
+		<p>zu sichernde Verzeichnisse:<p>
+		{{range $tardir := .Tar}}
+			<p>{{$tardir.Source}}</p>
+		{{end}}
+		<p>zu sicherende postgres-Datenbanken:</p>
+		{{range $pgitem := .PgDump}}
+			<p>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}</p>
+		{{end}}
+		
+        </body>
+</html>

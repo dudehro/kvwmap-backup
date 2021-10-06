@@ -5,5 +5,5 @@ import (
 )
 
 func main(){
-	restapi.List_backup_configs();
+	restapi.URIHandler()
 }
