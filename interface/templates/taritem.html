@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+      	<head>
+		<link href="/static/style.css" rel="stylesheet" type="text/css">
+                <title>Verzeichnissicherung anlegen/bearbeiten</title>
+		<script type="text/javascript">
+		</script>
+	</head>
+
+        <body>
+		<h1>tar-Konfiguration</h1>
+		<p>in Sicherung {{.File}}</p>
+		<table>
+			<form method="post" action="/backup-config/{{.File}}/tar/save">
+			<tr>
+				<td>
+					Quelle
+				</td>
+				<td>
+					<input type="text" id="source" name="source" {{if .source}}value="{{.source}}"{{end}}>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Ziel
+				</td>
+				<td>
+					<input type="text" id="target" name="target" {{if .targetname}}value="{{.targetname}}"{{end}}>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Ausschließen
+				</td>
+				<td>
+					<input type="text" id="exclude" name="exclude" {{if .exclude}}value="{{.exclude}}"{{end}}>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td align="right">
+				<input type="submit" value="Speichern" class="button">
+				</td>
+			</tr>
+			</form>
+		</table>
+		<p><a href="/backup-config/{{.File}}">zurück zu {{.File}}</a></p>
+		<p><a href="/backup-config">alle Sicherungen</a></p>
+        </body>
+</html>
