@@ -15,11 +15,12 @@ h1 {
 	color: #c2c2c2;
 }
 
-li {
+p:hover {
 	background-color: #474747;
 }
 
 li {
+	background-color: #474747;
 	list-style-type: none;
         margin: 10px 0px;
 }

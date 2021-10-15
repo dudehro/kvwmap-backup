@@ -25,7 +25,7 @@
 		{{$Filename := .Vars.File}}
 		{{range $i, $tardir := .Backup.Tar}}
 			<li>
-				{{$tardir.Source}}
+				{{$tardir.Source}} -> {{$tardir.TargetName}}
 				<a href="/backup-config/{{$Filename}}/tar/edit/{{$i}}" class="alignright">editieren</a>
 				<a href="/backup-config/{{$Filename}}/tar/delete/{{$i}}" class="alignright">löschen</a>
 			</li>
