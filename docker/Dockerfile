@@ -1,18 +1,26 @@
-FROM golang:bullseye
+##
+## first stage build
+##
+
+FROM golang:alpine as build
 MAINTAINER Georg Kämmert georg.kaemmert@gdi-service.de
 
-#RUN mkdir -p /backup-interface/backup-config
-#ADD ./sources/* /backup-interface/
-#RUN apt-get install glibc
-#VOLUME /backup-interface/backup-config
+RUN apk update && apk add git
 
-WORKDIR /go/src/github.com
-#RUN apt update && apt install -y git
+WORKDIR /app
+RUN git clone https://github.com/dudehro/kvwmap-backup.git 
 
-RUN git clone https://github.com/dudehro/kvwmap-backup.git
-#WORKDIR /go/src/github.com/kvwmap-backup
-RUN go build -pkgdir /go/src/github.com/kvwmap-backup
+WORKDIR kvwmap-backup
+RUN go mod download && go build -o app main.go
 
+##
+## second stage deploy
+##
+FROM alpine:latest as deploy
+MAINTAINER Georg Kämmert georg.kaemmert@gdi-service.de
+
+WORKDIR /app
+COPY --from=build /app/kvwmap-backup  .
 EXPOSE 8082/tcp
 
-CMD ls -al /go/src; go env
+CMD /app/app
