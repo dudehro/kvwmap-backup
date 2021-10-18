@@ -93,6 +93,7 @@ func tar_save(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// /backup-config/{File}/tar/edit
 func tar_edit(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
         templ, err := template.ParseFiles("./interface/templates/taritem.html")
@@ -106,7 +107,12 @@ func tar_edit(w http.ResponseWriter, r *http.Request) {
 	vars["source"] = taritem.Source
 	vars["targetname"] = taritem.TargetName
 	vars["exclude"] = taritem.Exclude
-	templ.Execute(w, vars)
+
+	var htmldata structs.HTMLTemplateData
+	htmldata.Vars = vars
+	
+
+	templ.Execute(w, htmldata)
 
 }
 

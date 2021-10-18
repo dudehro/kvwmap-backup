@@ -9,15 +9,15 @@
 
         <body>
 		<h1>tar-Konfiguration</h1>
-		<p>in Sicherung {{.File}}</p>
+		<p>in Sicherung {{.Vars.File}}</p>
 		<table>
-			<form method="post" action="/backup-config/{{.File}}/tar/save">
+			<form method="post" action="/backup-config/{{.Vars.File}}/tar/save">
 			<tr>
 				<td>
 					Quelle
 				</td>
 				<td>
-					<input type="text" id="source" name="source" {{if .source}}value="{{.source}}"{{end}}>
+					<input type="text" id="source" name="source" {{if .Vars.source}}value="{{.Vars.source}}"{{end}}>
 				</td>
 			</tr>
 			<tr>
@@ -25,7 +25,7 @@
 					Ziel
 				</td>
 				<td>
-					<input type="text" id="target" name="target" {{if .targetname}}value="{{.targetname}}"{{end}}>
+					<input type="text" id="target" name="target" {{if .Vars.targetname}}value="{{.Vars.targetname}}"{{end}}>
 				</td>
 			</tr>
 			<tr>
@@ -33,7 +33,7 @@
 					Ausschließen
 				</td>
 				<td>
-					<input type="text" id="exclude" name="exclude" {{if .exclude}}value="{{.exclude}}"{{end}}>
+					<input type="text" id="exclude" name="exclude" {{if .Vars.exclude}}value="{{.Vars.exclude}}"{{end}}>
 				</td>
 			</tr>
 			<tr>
@@ -44,7 +44,7 @@
 			</tr>
 			</form>
 		</table>
-		<p><a href="/backup-config/{{.File}}">zurück zu {{.File}}</a></p>
+		<p><a href="/backup-config/{{.Vars.File}}">zurück zu {{.Vars.File}}</a></p>
 		<p><a href="/backup-config">alle Sicherungen</a></p>
         </body>
 </html>
