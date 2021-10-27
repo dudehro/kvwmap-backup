@@ -3,15 +3,16 @@ package api_usecases
 import (
 	"github.com/kvwmap-backup/repository"
 	"github.com/kvwmap-backup/models"
+	"github.com/kvwmap-backup/configuration"
 	"io/ioutil"
-//	"fmt"
 	"log"
 	"strings"
 	"strconv"
 )
 
+
 func List_backup_configs() []string {
-	root := "./backup-config/"
+	root := config.GetConfigValFor(config.KeyBackupConfigDir)
 	var files []string
 	dir_content, err := ioutil.ReadDir(root)
         if err != nil {
@@ -63,9 +64,7 @@ func Load_Taritem(file string, id string) (*structs.TarItem, structs.Request) {
 	return taritem, s
 }
 
-
-
-func Save_TarItem(item structs.TarItem, file string) structs.Request {
+func SaveItem(item interface{}, file string) structs.Request {
 	data, err := Load_backup_config(file)
 	s := structs.Request{}
 	if err != nil {
@@ -75,16 +74,37 @@ func Save_TarItem(item structs.TarItem, file string) structs.Request {
 	}
 
 	found := false
-	for i, taritem := range data.Tar {
-		if taritem.Source == item.Source {
-			found = true
-			data.Tar[i] = &item	//update
-		}
-	}
-	if !found {				//insert
-		tararray := data.Tar		//refactor
-		tararray = append(tararray, &item)
-		data.Tar = tararray
+	switch item.(type){
+		case structs.MysqlDumpItem:
+			new_item := item.(structs.MysqlDumpItem)
+			for i, d := range data.MysqlDump {
+				if d.ContainerId == new_item.ContainerId &&
+				   d.DbName == new_item.DbName {
+					found = true
+					data.MysqlDump[i] = &new_item     //update
+				}
+			}
+			if !found {                             //insert
+				mysqlDumps := data.MysqlDump
+				mysqlDumps = append(mysqlDumps, &new_item)
+				data.MysqlDump = mysqlDumps
+			}
+
+		case structs.TarItem:
+			new_item := item.(structs.TarItem)
+			for i, taritem := range data.Tar {
+				if taritem.Source == new_item.Source {
+					found = true
+					data.Tar[i] = &new_item	//update
+				}
+			}
+			if !found {				//insert
+				tararray := data.Tar
+				tararray = append(tararray, &new_item)
+				data.Tar = tararray
+			}
+		default:
+			log.Println("Keine Ahnung?")
 	}
 
 	req := Save_Backup_Config(data, file)
@@ -94,10 +114,12 @@ func Save_TarItem(item structs.TarItem, file string) structs.Request {
 		s.Errors = append(s.Errors, req.Errors[0])
 		s.Success = false
 	}
+
 	return s
 }
 
-func Delete_TarItem(file string, id string) structs.Request {
+func DeleteItem(file string, id string, t interface{}) structs.Request {
+	log.Printf("DeleteItem(%s, %s, %T)", file, id, t)
 	data, err := Load_backup_config(file)
 	s := structs.Request{}
 	if err != nil {
@@ -111,16 +133,28 @@ func Delete_TarItem(file string, id string) structs.Request {
                 s.Success = false
                 return s
         }
-	if id_int <= len(data.Tar) {
 
-		copy(data.Tar[id_int:], data.Tar[id_int+1:])
-		data.Tar[len(data.Tar)-1] = nil
-		data.Tar = data.Tar[:len(data.Tar)-1]
-
-		s.Success = true
-	} else {
-		s.Errors = append(s.Errors, "Es existiert kein Eintrag mit ID="+id)
-		s.Success = false
+	switch t.(type) {
+		case structs.TarItem:
+			if id_int <= len(data.Tar) {
+				copy(data.Tar[id_int:], data.Tar[id_int+1:])
+				data.Tar[len(data.Tar)-1] = nil
+				data.Tar = data.Tar[:len(data.Tar)-1]
+				s.Success = true
+			} else {
+				s.Errors = append(s.Errors, "Es existiert kein Eintrag mit ID="+id)
+				s.Success = false
+			}
+		case structs.MysqlDumpItem:
+			if id_int <= len(data.MysqlDump) {
+				copy(data.MysqlDump[id_int:], data.MysqlDump[id_int+1:])
+				data.MysqlDump[len(data.MysqlDump)-1] = nil
+				data.MysqlDump = data.MysqlDump[:len(data.MysqlDump)-1]
+				s.Success = true
+			} else {
+				s.Errors = append(s.Errors, "Es existiert kein Eintrag mit ID="+id)
+				s.Success = false
+			}
 	}
 
 	req := Save_Backup_Config(data, file)

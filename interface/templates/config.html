@@ -7,9 +7,9 @@
 
         <body>
 		<!-- <h1>Sicherung</h1> -->
+		{{ $BackupFolder := printf "%s/%s" .Backup.BackupPath .Backup.BackupFolder}}
 		<h1>Sicherung: {{.Backup.Name}}</h1>
-		<p>Sicherungsverzeichnis: {{.Backup.BackupPath}}</p>
-		<p>Sicherungsordner: {{.Backup.BackupFolder}}</p>
+		<p>Sicherungsverzeichnis: {{$BackupFolder}}</p>
 		{{if .Backup.Beschreibung }}
 			<p>Beschreibung: {{.Backup.Beschreibung}}</p>
 		{{end}}
@@ -25,7 +25,7 @@
 		{{$Filename := .Vars.File}}
 		{{range $i, $tardir := .Backup.Tar}}
 			<li>
-				{{$tardir.Source}} -> {{$tardir.TargetName}}
+				{{$tardir.Source}} -> {{$BackupFolder}}/{{$tardir.TargetName}}
 				<a href="/backup-config/{{$Filename}}/tar/edit/{{$i}}" class="alignright">editieren</a>
 				<a href="/backup-config/{{$Filename}}/tar/delete/{{$i}}" class="alignright">löschen</a>
 			</li>
@@ -34,10 +34,13 @@
 		{{end}}
 		</ul>
 
-		<p>mySQL-Dumps</p>
+		<p>mySQL-Dumps<a href="/backup-config/{{.Vars.File}}/mysql/new" class="alignright">neu</a></p>
 		<ul>
-		{{range $mysqlitem := .Backup.MysqlDump}}
-			<li>{{$mysqlitem.DbName}}@{{$mysqlitem.ContainerId}}</li>
+		{{range $i, $mysqlitem := .Backup.MysqlDump}}
+			<li>{{$mysqlitem.DbName}}@{{$mysqlitem.ContainerId}}
+				<a href="/backup-config/{{$Filename}}/mysql/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/mysql/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
 		{{else}}
 			<li>keine mySQL-Dumps eingerichtet</li>
 		{{end}}

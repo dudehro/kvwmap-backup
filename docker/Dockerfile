@@ -6,11 +6,10 @@ MAINTAINER Georg Kämmert georg.kaemmert@gdi-service.de
 
 WORKDIR /app
 
-RUN apk update && apk add git 
+RUN apk update && apk add git
 RUN git clone https://github.com/dudehro/kvwmap-backup.git 
 
 WORKDIR kvwmap-backup
-
 RUN go mod download && go build -o runtime main.go
 
 ##
@@ -19,8 +18,10 @@ RUN go mod download && go build -o runtime main.go
 FROM alpine:latest as deploy
 MAINTAINER Georg Kämmert georg.kaemmert@gdi-service.de
 
+RUN apk update && apk add htop
+
 WORKDIR /app
-COPY --from=build /app/kvwmap-backup  .
-EXPOSE 8082/tcp
+COPY ./src/config.csv .
+COPY --from=build /app/kvwmap-backup/runtime .
 
 CMD /app/runtime

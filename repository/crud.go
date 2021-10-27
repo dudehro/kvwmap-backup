@@ -2,14 +2,19 @@ package crud
 
 import (
 	"github.com/kvwmap-backup/models"
+	"github.com/kvwmap-backup/configuration"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 //        "fmt"
 )
 
+var dir string
+
 func Load_backup_config(file string) (*structs.GdiBackup, error) {
-	content, err := ioutil.ReadFile("./backup-config/"+file)
+	dir = config.GetConfigValFor(config.KeyBackupConfigDir)
+	log.Printf("loading backup-config %s", dir+file)
+	content, err := ioutil.ReadFile(dir+file)
 	var payload structs.GdiBackup
 	if err != nil {
 		log.Print("Fehler beim öffnen: ", err)
@@ -23,6 +28,7 @@ func Load_backup_config(file string) (*structs.GdiBackup, error) {
 }
 
 func Write_json(j *structs.GdiBackup, file string) structs.Request {
+	dir = config.GetConfigValFor(config.KeyBackupConfigDir)
 	data, err := json.MarshalIndent(j, "", " ")
 //        fmt.Printf("Write_json output: \n %s\n", string(data))
 	s := structs.Request{}
@@ -31,12 +37,13 @@ func Write_json(j *structs.GdiBackup, file string) structs.Request {
 		s.Success = false
 		s.Errors = append(s.Errors, err.Error())
 	}
-	err = ioutil.WriteFile("./backup-config/"+file, data, 0644)
+	log.Printf("writing config file to %s", dir+file)
+	err = ioutil.WriteFile(dir+file, data, 0644)
 	if err != nil {
 		s.Success = false
 		s.Errors = append(s.Errors, err.Error())
 	}
-	
+
 	return s
 
 }
