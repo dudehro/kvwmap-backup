@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"log"
 	"errors"
+	"strconv"
 )
 
 func URIHandler() {
@@ -80,18 +81,28 @@ func tar_new(w http.ResponseWriter, r *http.Request) {
 	templ.Execute(w, htmldata)
 }
 
-// /backup-config/{File}/tar/save
-func tar_save(w http.ResponseWriter, r *http.Request) {
+func item_save(w http.ResponseWriter, r *http.Request, t string){
 	vars := mux.Vars(r)
-	var taritem structs.TarItem
-	taritem.Source = r.PostFormValue("source")
-	taritem.TargetName = r.PostFormValue("target")
-	taritem.Exclude = r.PostFormValue("exclude")
 
-	request := api_usecases.SaveItem(taritem, vars["File"])
+	var request = structs.Request{}
+	switch t {
+		case "tar":
+			item := structs.TarItem{}
+			item.Source = r.PostFormValue("source")
+			item.TargetName = r.PostFormValue("target")
+			item.Exclude = r.PostFormValue("exclude")
+			request = api_usecases.SaveItem(item , vars["File"], r.PostFormValue("Id"))
+		case "mysql":
+			item := structs.MysqlDumpItem{}
+			item.ContainerId = r.PostFormValue("containerid")
+			item.DbName = r.PostFormValue("dbname")
+			item.DockerNetwork = r.PostFormValue("dockernetwork")
+			item.TargetName = r.PostFormValue("targetname")
+			request = api_usecases.SaveItem(item , vars["File"], r.PostFormValue("Id"))
+	}
 
 	if request.Success {
-		httpSuccess(w,r)
+		httpSuccess(w,r, vars["File"])
 	} else {
 		if len(request.Errors) < 1 {
 			httpErrorStr(w, r, "unbekannter Fehler")
@@ -101,45 +112,91 @@ func tar_save(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// /backup-config/{File}/tar/edit
-func tar_edit(w http.ResponseWriter, r *http.Request) {
+// /backup-config/{File}/tar/save
+func tar_save(w http.ResponseWriter, r *http.Request) {
+	item_save(w, r, "tar")
+}
+
+func item_edit(w http.ResponseWriter, r *http.Request, t string){
 	vars := mux.Vars(r)
-        templ, err := template.ParseFiles("./interface/templates/taritem.html")
+
+	var htmlData structs.HTMLTemplateData
+	htmlData.Vars = vars
+	BackupData, err := api_usecases.Load_backup_config(vars["File"])
+	htmlData.Backup = BackupData
+	if err != nil {
+		httpErrorStr(w, r, "Laden der Backup-Config fehlgeschlagen! " + err.Error() )
+	}
+
+	id_int, err := strconv.Atoi(vars["Id"])
+	if err != nil {
+		httpError(w, r, err)
+	}
+
+	htmlData.Vars = vars
+	var templateFile string
+	switch t {
+		case "tar":
+			templateFile = "./interface/templates/taritem.html"
+			if len(htmlData.Backup.Tar) >= id_int {
+				htmlData.Vars["source"]  = htmlData.Backup.Tar[id_int].Source
+				htmlData.Vars["target"]  = htmlData.Backup.Tar[id_int].TargetName
+				htmlData.Vars["exclude"] = htmlData.Backup.Tar[id_int].Exclude
+			} else {
+				httpErrorStr(w, r, "Ausgewähltes Element nicht vorhaden!" )
+			}
+		case "mysql":
+			templateFile = "./interface/templates/mysqlitem.html"
+			if len(htmlData.Backup.MysqlDump) >= id_int {
+				htmlData.Vars["ContainerId"] = htmlData.Backup.MysqlDump[id_int].ContainerId
+				htmlData.Vars["DockerNetwork"] = htmlData.Backup.MysqlDump[id_int].DockerNetwork
+				htmlData.Vars["DbName"] = htmlData.Backup.MysqlDump[id_int].DbName
+				htmlData.Vars["TargetName"] = htmlData.Backup.MysqlDump[id_int].TargetName
+			} else {
+				httpErrorStr(w, r, "Ausgewähltes Element nicht vorhanden" )
+			}
+	}
+
+        templ, err := template.ParseFiles(templateFile)
         if err != nil {
                 httpError(w, r, err)
         }
-        taritem, request := api_usecases.Load_Taritem(vars["File"], vars["Id"])
-	if !request.Success {
-		httpErrorStr(w, r, request.Errors[0])
-	}
-	vars["source"] = taritem.Source
-	vars["targetname"] = taritem.TargetName
-	vars["exclude"] = taritem.Exclude
-
-	var htmldata structs.HTMLTemplateData
-	htmldata.Vars = vars
-
-	templ.Execute(w, htmldata)
+	templ.Execute(w, htmlData)
 }
 
-// /backup-config/{File}/tar/delete/{Id}
-func tar_delete(w http.ResponseWriter, r *http.Request) {
+func item_delete(w http.ResponseWriter, r *http.Request, item interface{}){
 	vars := mux.Vars(r)
-	item := structs.TarItem{}
 	request := api_usecases.DeleteItem(vars["File"], vars["Id"], item)
 	if request.Success {
-		httpSuccess(w, r)
+		httpSuccess(w, r, vars["File"])
 	} else {
 		httpErrorStr(w, r, request.Errors[0])
 	}
 }
 
-func httpSuccess(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./interface/templates/status/success.html")
+// /backup-config/{File}/tar/edit/{Id}
+func tar_edit(w http.ResponseWriter, r *http.Request) {
+	item_edit(w, r, "tar")
+}
+
+// /backup-config/{File}/tar/delete/{Id}
+func tar_delete(w http.ResponseWriter, r *http.Request) {
+	item := structs.TarItem{}
+	item_delete(w, r, item)
+}
+
+func httpSuccess(w http.ResponseWriter, r *http.Request, forwardto string) {
+	log.Printf("httpSuccess, forwardto=%s", forwardto)
+	vars := mux.Vars(r)
+	templ, err := template.ParseFiles("./interface/templates/status/success.html")
+	if err != nil {
+		httpError(w, r, err)
+	}
+	vars["forwardto"] = forwardto
+	templ.Execute(w, vars)
 }
 
 func httpNotFound(w http.ResponseWriter, r *http.Request) {
-//	w.WriteHeader(http.StatusNotFound)
 	log.Printf("httpNotFound requested URI %s", r.RequestURI)
 	http.ServeFile(w, r, "./interface/templates/status/notfound.html")
 }
@@ -182,57 +239,16 @@ func mysql_new(w http.ResponseWriter, r *http.Request) {
 
 // /backup-config/{File}/mysql/save
 func mysql_save(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	var mysqlitem structs.MysqlDumpItem
-	mysqlitem.ContainerId = r.PostFormValue("containerid")
-	log.Printf("ContainerId:%s",mysqlitem.ContainerId)
-	mysqlitem.DbName = r.PostFormValue("dbname")
-	mysqlitem.DockerNetwork = r.PostFormValue("dockernetwork")
-	mysqlitem.TargetName = r.PostFormValue("targetname")
-
-	request := api_usecases.SaveItem(mysqlitem, vars["File"])
-	if request.Success {
-		httpSuccess(w,r)
-	} else {
-		if len(request.Errors) < 1 {
-			httpErrorStr(w, r, "unbekannter Fehler")
-		} else {
-			httpErrorStr(w, r, request.Errors[0])
-		}
-	}
+	item_save(w, r, "mysql")
 }
 
 // /backup-config/{File}/mysql/edit
 func mysql_edit(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	templ, err := template.ParseFiles("./interface/templates/mysql.html")
-	if err != nil {
-		httpError(w, r, err)
-	}
-	taritem, request := api_usecases.Load_Taritem(vars["File"], vars["Id"])
-	if !request.Success {
-		httpErrorStr(w, r, request.Errors[0])
-	}
-	vars["source"] = taritem.Source
-	vars["targetname"] = taritem.TargetName
-	vars["exclude"] = taritem.Exclude
-
-	var htmldata structs.HTMLTemplateData
-	htmldata.Vars = vars
-
-	templ.Execute(w, htmldata)
+	item_edit(w, r, "mysql")
 }
-
 
 // /backup-config/{File}/mysql/delete/{Id}
 func mysql_delete(w http.ResponseWriter, r *http.Request) {
-	log.Println("mysql_delete")
-	vars := mux.Vars(r)
 	item := structs.MysqlDumpItem{}
-	request := api_usecases.DeleteItem(vars["File"], vars["Id"], item)
-	if request.Success {
-		httpSuccess(w, r)
-	} else {
-		httpErrorStr(w, r, request.Errors[0])
-	}
+	item_delete(w, r, item)
 }

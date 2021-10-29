@@ -7,6 +7,10 @@
 
         <body>
 		<h1>Aktion erfolgreich ausgeführt.</h1>
-		<a href="/backup-config">weiter</a>
+		{{if .forwardto}}
+			<a href="/backup-config/{{.forwardto}}">weiter</a>
+		{{else}}
+			<a href="/backup-config">weiter</a>
+		{{end}}
         </body>
 </html>

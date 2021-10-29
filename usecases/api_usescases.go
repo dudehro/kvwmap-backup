@@ -10,7 +10,6 @@ import (
 	"strconv"
 )
 
-
 func List_backup_configs() []string {
 	root := config.GetConfigValFor(config.KeyBackupConfigDir)
 	var files []string
@@ -42,29 +41,7 @@ func Save_Backup_Config(data *structs.GdiBackup, file string) structs.Request {
 	return s
 }
 
-func Load_Taritem(file string, id string) (*structs.TarItem, structs.Request) {
-	data, err := Load_backup_config(file)
-	s := structs.Request{}
-	if err != nil {
-		s.Errors = append(s.Errors, err.Error())
-		s.Success = false
-		return nil, s
-	}
-        id_int, err := strconv.Atoi(id)
-        if err != nil {
-                s.Errors = append(s.Errors, err.Error())
-		s.Success = false
-		return nil, s
-        }
-	taritem := &structs.TarItem{}
-	if len(data.Tar) >= id_int {
-		taritem = data.Tar[id_int]
-		s.Success = true
-	}
-	return taritem, s
-}
-
-func SaveItem(item interface{}, file string) structs.Request {
+func SaveItem(item interface{}, file string, id string) structs.Request {
 	data, err := Load_backup_config(file)
 	s := structs.Request{}
 	if err != nil {
@@ -73,18 +50,28 @@ func SaveItem(item interface{}, file string) structs.Request {
 		return s
 	}
 
-	found := false
-	switch item.(type){
+	var id_int int
+	if len(id) > 0 {
+		id_int, err = strconv.Atoi(id)
+		if err != nil {
+			s.Errors = append(s.Errors, err.Error())
+			s.Success = false
+			return s
+		}
+	} else {
+		id_int = -1
+	}
+
+	switch item.(type) {
 		case structs.MysqlDumpItem:
 			new_item := item.(structs.MysqlDumpItem)
-			for i, d := range data.MysqlDump {
-				if d.ContainerId == new_item.ContainerId &&
-				   d.DbName == new_item.DbName {
-					found = true
-					data.MysqlDump[i] = &new_item     //update
+			if id_int > -1 {					//update
+				if len(data.MysqlDump) <= id_int {
+					data.MysqlDump[id_int] = &new_item
+				} else {
+					s.Errors = append(s.Errors, "Angegebenes Element existiert nicht!")
 				}
-			}
-			if !found {                             //insert
+			} else {						//insert
 				mysqlDumps := data.MysqlDump
 				mysqlDumps = append(mysqlDumps, &new_item)
 				data.MysqlDump = mysqlDumps
@@ -92,16 +79,16 @@ func SaveItem(item interface{}, file string) structs.Request {
 
 		case structs.TarItem:
 			new_item := item.(structs.TarItem)
-			for i, taritem := range data.Tar {
-				if taritem.Source == new_item.Source {
-					found = true
-					data.Tar[i] = &new_item	//update
+			if id_int > -1 {
+				if len(data.Tar) > -1 {
+					data.Tar[id_int] = &new_item
+				} else {
+					s.Errors = append(s.Errors, "Angegebenes Element existiert nicht!.")
 				}
-			}
-			if !found {				//insert
-				tararray := data.Tar
-				tararray = append(tararray, &new_item)
-				data.Tar = tararray
+			} else {
+				tarItems := data.Tar
+				tarItems = append(tarItems, &new_item)
+				data.Tar = tarItems
 			}
 		default:
 			log.Println("Keine Ahnung?")
