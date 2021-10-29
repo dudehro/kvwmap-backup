@@ -6,6 +6,6 @@ import (
 )
 
 func main(){
-	config.LoadConfig("./config.csv")
+	config.LoadConfig("")
 	delivery.URIHandler()
 }

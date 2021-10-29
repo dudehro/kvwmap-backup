@@ -8,12 +8,10 @@ import (
 
 const KeyBackupConfigDir 	= "backupconfig-directory"
 const KeyHTTPPort		= "httpport"
+const KeyConfigFile		= "kvwmapBackupConfig"
 
 var config map[string]string
 
-//func SetConfigFile(f string) {
-//	configfile = f
-//}
 
 func printConfig() {
 	for k, v := range config {
@@ -21,32 +19,42 @@ func printConfig() {
 	}
 }
 
-
-
 func LoadConfig(f string) {
-	log.Printf("Loading config from %s", f)
-	file, err := os.Open(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	csvReader := csv.NewReader(file)
-	csvReader.Comma = '='
-	data, err := csvReader.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	config = make(map[string]string)
-	for _, line := range data {
-		for j, _ := range line {
-			if j == 1 {
-				config[line[0]] = line[1]
+
+	if f == "" {
+		f = GetConfigValFor(KeyConfigFile)
+		log.Printf("No config-file specified, trying environment KVWMAPBACKUPCONFIG: %s", f)
+	}
+
+
+	if len(f) > 0 {
+		log.Printf("Loading config from %s", f)
+		file, err := os.Open(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		csvReader := csv.NewReader(file)
+		csvReader.Comma = '='
+		data, err := csvReader.ReadAll()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, line := range data {
+			for j, _ := range line {
+				if j == 1 {
+					config[line[0]] = line[1]
+				}
 			}
 		}
+		printConfig()
+	} else {
+		log.Printf("No configfile specified or found, using os-environment")
 	}
-	printConfig()
 }
 
 func GetConfigValFor(s string) string {
@@ -55,7 +63,8 @@ func GetConfigValFor(s string) string {
 	if ok {
 		ret = val
 	} else {
-		ret = ""
+		ret = os.Getenv(s)
+		config[s] = ret
 	}
 	log.Printf("GetConfigValFor(%s) returns %s", s, ret)
 	return ret
