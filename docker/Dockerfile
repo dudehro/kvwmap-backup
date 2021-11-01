@@ -18,16 +18,11 @@ RUN go mod download && go build -o runtime main.go
 FROM alpine:latest as deploy
 MAINTAINER Georg Kämmert georg.kaemmert@gdi-service.de
 
-RUN apk update && apk add htop
+RUN apk update && apk add htop tree
 
-#ENV kvwmapBackupConfig=/app/config.csv
-ENV backupconfig-directory=/app/backup-config
-ENV httpport=8500
-
-WORKDIR /app/interface
+WORKDIR /app/interface/templates
 COPY --from=build /app/kvwmap-backup/interface/templates .
 WORKDIR /app
-#COPY --from=build /app/kvwmap-backup/runtime /app/kvwmap-backup/config.csv /app/
 COPY --from=build /app/kvwmap-backup/runtime /app/
 
 CMD /app/runtime

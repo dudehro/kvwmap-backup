@@ -46,19 +46,25 @@
 		{{end}}
 		</ul>
 
-		<p>postgreSQL-Dumps</p>
+		<p>postgreSQL-Dumps<a href="/backup-config/{{.Vars.File}}/pgdump/new" class="alignright">neu</a></p>
 		<ul>
-		{{range $pgitem := .Backup.PgDump}}
-			<li>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}</li>
+		{{range $i, $pgitem := .Backup.PgDump}}
+			<li>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}
+				<a href="/backup-config/{{$Filename}}/pgdump/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/pgdump/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
 		{{else}}
 			<li>keine pg_dumps konfiguriert</li>
 		{{end}}
 		</ul>
 
-		<p>postgreSQL-Dumpall</p>
+		<p>postgreSQL-Dumpall<a href="/backup-config/{{.Vars.File}}/pgdumpall/new" class="alignright">neu</a></p>
 		<ul>
-		{{range $pgitem := .Backup.PgDumpall}}
-			<li>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}</li>
+		{{range $i, $pgitem := .Backup.PgDumpall}}
+			<li>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}
+				<a href="/backup-config/{{$Filename}}/pgdumpall/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/pgdumpall/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
 		{{else}}
 			<li>keine pg_dumpall-Dumps konfiguriert</li>
 		{{end}}

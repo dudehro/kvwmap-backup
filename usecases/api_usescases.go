@@ -62,14 +62,15 @@ func SaveItem(item interface{}, file string, id string) structs.Request {
 		id_int = -1
 	}
 
+	error_ndf := "Angegebenes Element existiert nicht!"
 	switch item.(type) {
 		case structs.MysqlDumpItem:
 			new_item := item.(structs.MysqlDumpItem)
 			if id_int > -1 {					//update
-				if len(data.MysqlDump) <= id_int {
+				if len(data.MysqlDump) >= id_int {
 					data.MysqlDump[id_int] = &new_item
 				} else {
-					s.Errors = append(s.Errors, "Angegebenes Element existiert nicht!")
+					s.Errors = append(s.Errors, error_ndf)
 				}
 			} else {						//insert
 				mysqlDumps := data.MysqlDump
@@ -80,16 +81,43 @@ func SaveItem(item interface{}, file string, id string) structs.Request {
 		case structs.TarItem:
 			new_item := item.(structs.TarItem)
 			if id_int > -1 {
-				if len(data.Tar) > -1 {
+				if len(data.Tar) >= id_int {
 					data.Tar[id_int] = &new_item
 				} else {
-					s.Errors = append(s.Errors, "Angegebenes Element existiert nicht!.")
+					s.Errors = append(s.Errors, error_ndf)
 				}
 			} else {
 				tarItems := data.Tar
 				tarItems = append(tarItems, &new_item)
 				data.Tar = tarItems
 			}
+		case structs.PgDumpItem:
+			new_item := item.(structs.PgDumpItem)
+			if id_int > -1 {
+				if len(data.PgDump) >= id_int {
+					data.PgDump[id_int] = &new_item
+				} else {
+					s.Errors = append(s.Errors, error_ndf)
+				}
+			} else {
+				pgDumps := data.PgDump
+				pgDumps = append(pgDumps, &new_item)
+				data.PgDump = pgDumps
+			}
+		case structs.PgDumpallItem:
+			new_item := item.(structs.PgDumpallItem)
+			if id_int > -1 {
+				if len(data.PgDumpall) >= id_int {
+					data.PgDumpall[id_int] = &new_item
+				} else {
+					s.Errors = append(s.Errors, error_ndf)
+				}
+			} else {
+				log.Println("save new item")
+				pgDumps := data.PgDumpall
+				pgDumps = append(pgDumps, &new_item)
+				data.PgDumpall = pgDumps
+                        }
 		default:
 			log.Println("Keine Ahnung?")
 	}
@@ -142,6 +170,27 @@ func DeleteItem(file string, id string, t interface{}) structs.Request {
 				s.Errors = append(s.Errors, "Es existiert kein Eintrag mit ID="+id)
 				s.Success = false
 			}
+		case structs.PgDumpItem:
+			if id_int <= len(data.PgDump) {
+				copy(data.PgDump[id_int:], data.PgDump[id_int+1:])
+				data.PgDump[len(data.PgDump)-1] = nil
+				data.PgDump = data.PgDump[:len(data.PgDump)-1]
+				s.Success = true
+			} else {
+				s.Errors = append(s.Errors, "Es existiert kein Eintrag mit ID="+id)
+				s.Success = false
+			}
+		case structs.PgDumpallItem:
+			if id_int <= len(data.PgDumpall) {
+				copy(data.PgDumpall[id_int:], data.PgDumpall[id_int+1:])
+				data.PgDumpall[len(data.PgDumpall)-1] = nil
+				data.PgDumpall = data.PgDumpall[:len(data.PgDumpall)-1]
+				s.Success = true
+			} else {
+				s.Errors = append(s.Errors, "Es existiert kein Eintrag mit ID="+id)
+				s.Success = false
+			}
+
 	}
 
 	req := Save_Backup_Config(data, file)

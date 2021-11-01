@@ -27,6 +27,16 @@ func URIHandler() {
 	r.HandleFunc("/backup-config/{File}/mysql/save", mysql_save)
 	r.HandleFunc("/backup-config/{File}/mysql/edit/{Id}", mysql_edit)
 	r.HandleFunc("/backup-config/{File}/mysql/delete/{Id}", mysql_delete)
+	//pg_dump
+	r.HandleFunc("/backup-config/{File}/pgdump/new", pgdump_new)
+	r.HandleFunc("/backup-config/{File}/pgdump/save", pgdump_save)
+	r.HandleFunc("/backup-config/{File}/pgdump/edit/{Id}", pgdump_edit)
+	r.HandleFunc("/backup-config/{File}/pgdump/delete/{Id}", pgdump_delete)
+	//pg_dumpall
+	r.HandleFunc("/backup-config/{File}/pgdumpall/new", pgdumpall_new)
+	r.HandleFunc("/backup-config/{File}/pgdumpall/save", pgdumpall_save)
+	r.HandleFunc("/backup-config/{File}/pgdumpall/edit/{Id}", pgdumpall_edit)
+	r.HandleFunc("/backup-config/{File}/pgdumpall/delete/{Id}", pgdumpall_delete)
 
 	//statische Inhalte, CSS+JS
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./interface/templates/static"))))
@@ -99,6 +109,25 @@ func item_save(w http.ResponseWriter, r *http.Request, t string){
 			item.DockerNetwork = r.PostFormValue("dockernetwork")
 			item.TargetName = r.PostFormValue("targetname")
 			request = api_usecases.SaveItem(item , vars["File"], r.PostFormValue("Id"))
+		case "pgdump":
+			item := structs.PgDumpItem{}
+			item.ContainerId = r.PostFormValue("containerid")
+			item.DockerNetwork = r.PostFormValue("dockernetwork")
+			item.DbName = r.PostFormValue("dbname")
+			item.DbUser = r.PostFormValue("dbuser")
+			item.TargetName = r.PostFormValue("targetname")
+			request = api_usecases.SaveItem(item, vars["File"], r.PostFormValue("Id"))
+		case "pgdumpall":
+			item := structs.PgDumpallItem{}
+			item.ContainerId = r.PostFormValue("containerid")
+			item.DockerNetwork = r.PostFormValue("dockernetwork")
+			item.DbName = r.PostFormValue("dbname")
+			item.DbUser = r.PostFormValue("dbuser")
+			item.TargetName = r.PostFormValue("targetname")
+			item.PgDumpallParameter = r.PostFormValue("pgdumpparameter")
+			request = api_usecases.SaveItem(item, vars["File"], r.PostFormValue("Id"))
+		default:
+			log.Fatal("Kein zu speichernder Item-Typ angegeben!")
 	}
 
 	if request.Success {
@@ -133,6 +162,7 @@ func item_edit(w http.ResponseWriter, r *http.Request, t string){
 		httpError(w, r, err)
 	}
 
+	error_ndf := "Ausgewähltes Element nicht vorhanden!"
 	htmlData.Vars = vars
 	var templateFile string
 	switch t {
@@ -143,7 +173,7 @@ func item_edit(w http.ResponseWriter, r *http.Request, t string){
 				htmlData.Vars["target"]  = htmlData.Backup.Tar[id_int].TargetName
 				htmlData.Vars["exclude"] = htmlData.Backup.Tar[id_int].Exclude
 			} else {
-				httpErrorStr(w, r, "Ausgewähltes Element nicht vorhaden!" )
+				httpErrorStr(w, r, error_ndf )
 			}
 		case "mysql":
 			templateFile = "./interface/templates/mysqlitem.html"
@@ -153,7 +183,30 @@ func item_edit(w http.ResponseWriter, r *http.Request, t string){
 				htmlData.Vars["DbName"] = htmlData.Backup.MysqlDump[id_int].DbName
 				htmlData.Vars["TargetName"] = htmlData.Backup.MysqlDump[id_int].TargetName
 			} else {
-				httpErrorStr(w, r, "Ausgewähltes Element nicht vorhanden" )
+				httpErrorStr(w, r, error_ndf )
+			}
+		case "pgdump":
+			templateFile = "./interface/templates/pgdumpitem.html"
+			if len(htmlData.Backup.PgDump) >= id_int {
+				htmlData.Vars["ContainerId"] = htmlData.Backup.PgDump[id_int].ContainerId
+				htmlData.Vars["DockerNetwork"] = htmlData.Backup.PgDump[id_int].DockerNetwork
+				htmlData.Vars["DbUser"] = htmlData.Backup.PgDump[id_int].DbName
+				htmlData.Vars["DbName"] = htmlData.Backup.PgDump[id_int].DbUser
+				htmlData.Vars["TargetName"] = htmlData.Backup.PgDump[id_int].TargetName
+			} else  {
+				httpErrorStr(w, r, error_ndf)
+			}
+		case "pgdumpall":
+			templateFile = "./interface/templates/pgdumpallitem.html"
+			if len(htmlData.Backup.PgDumpall) >= id_int {
+				htmlData.Vars["ContainerId"] = htmlData.Backup.PgDumpall[id_int].ContainerId
+				htmlData.Vars["DockerNetwork"] = htmlData.Backup.PgDumpall[id_int].DockerNetwork
+				htmlData.Vars["DbUser"] = htmlData.Backup.PgDumpall[id_int].DbName
+				htmlData.Vars["DbName"] = htmlData.Backup.PgDumpall[id_int].DbUser
+				htmlData.Vars["TargetName"] = htmlData.Backup.PgDumpall[id_int].TargetName
+				htmlData.Vars["PgDumpallParameter"] = htmlData.Backup.PgDumpall[id_int].PgDumpallParameter
+			} else  {
+				httpErrorStr(w, r, error_ndf)
 			}
 	}
 
@@ -242,7 +295,7 @@ func mysql_save(w http.ResponseWriter, r *http.Request) {
 	item_save(w, r, "mysql")
 }
 
-// /backup-config/{File}/mysql/edit
+// /backup-config/{File}/mysql/edit/{Id}
 func mysql_edit(w http.ResponseWriter, r *http.Request) {
 	item_edit(w, r, "mysql")
 }
@@ -250,5 +303,69 @@ func mysql_edit(w http.ResponseWriter, r *http.Request) {
 // /backup-config/{File}/mysql/delete/{Id}
 func mysql_delete(w http.ResponseWriter, r *http.Request) {
 	item := structs.MysqlDumpItem{}
+	item_delete(w, r, item)
+}
+
+//
+// pg_dump
+//
+
+// /backup-config/{Name}/pgdump/new
+func pgdump_new(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var htmldata structs.HTMLTemplateData
+	htmldata.Vars = vars
+	templ, err := template.ParseFiles("./interface/templates/pgdumpitem.html")
+	if err != nil {
+		httpError(w, r, err)
+	}
+	templ.Execute(w, htmldata)
+}
+
+// /backup-config/{File}/pgdump/save
+func pgdump_save(w http.ResponseWriter, r *http.Request) {
+	item_save(w, r, "pgdump")
+}
+
+// /backup-config/{File}/pgdump/edit/{Id}
+func pgdump_edit(w http.ResponseWriter, r *http.Request) {
+	item_edit(w, r, "pgdump")
+}
+
+// /backup-config/{File}/pgdump/delete/{Id}
+func pgdump_delete(w http.ResponseWriter, r *http.Request) {
+	item := structs.PgDumpItem{}
+	item_delete(w, r, item)
+}
+
+//
+// pg_dumpall
+//
+
+// /backup-config/{Name}/pgdumpall/new
+func pgdumpall_new(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var htmldata structs.HTMLTemplateData
+	htmldata.Vars = vars
+	templ, err := template.ParseFiles("./interface/templates/pgdumpallitem.html")
+	if err != nil {
+		httpError(w, r, err)
+	}
+	templ.Execute(w, htmldata)
+}
+
+// /backup-config/{File}/pgdumpall/save
+func pgdumpall_save(w http.ResponseWriter, r *http.Request) {
+	item_save(w, r, "pgdumpall")
+}
+
+// /backup-config/{File}/pgdumpall/edit/{Id}
+func pgdumpall_edit(w http.ResponseWriter, r *http.Request) {
+	item_edit(w, r, "pgdumpall")
+}
+
+// /backup-config/{File}/pgdumpall/delete/{Id}
+func pgdumpall_delete(w http.ResponseWriter, r *http.Request) {
+	item := structs.PgDumpallItem{}
 	item_delete(w, r, item)
 }

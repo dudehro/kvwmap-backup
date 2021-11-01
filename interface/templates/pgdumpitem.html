@@ -2,16 +2,16 @@
 <html>
       	<head>
 		<link href="/static/style.css" rel="stylesheet" type="text/css">
-                <title>mySQL-Dump anlegen/bearbeiten</title>
+                <title>postgreSQL-Dump anlegen/bearbeiten</title>
 		<script type="text/javascript">
 		</script>
 	</head>
 
         <body>
-		<h1>mySQL-Dump</h1>
+		<h1>postgreSQL-Dump</h1>
 		<p>in Sicherung {{.Vars.File}}</p>
 		<table>
-			<form method="post" action="/backup-config/{{.Vars.File}}/mysql/save">
+			<form method="post" action="/backup-config/{{.Vars.File}}/pgdump/save">
 			<tr>
 				<td>
 					Docker Container ID/Name
@@ -34,6 +34,14 @@
 				</td>
 				<td>
 					<input type="text" id="exclude" name="dbname" {{if .Vars.DbName}}value="{{.Vars.DbName}}"{{end}}>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					DB-User
+				</td>
+				<td>
+					<input type="text" id="exclude" name="dbuser" {{if .Vars.DbUser}}value="{{.Vars.DbUser}}"{{end}}>
 				</td>
 			</tr>
 			<tr>

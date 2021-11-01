@@ -6,6 +6,6 @@ import (
 )
 
 func main(){
-	config.LoadConfig("")
+	config.InitConfig()
 	delivery.URIHandler()
 }
