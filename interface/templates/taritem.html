@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+      	<head>
+		<link href="/static/style.css" rel="stylesheet" type="text/css">
+                <title>Verzeichnissicherung anlegen/bearbeiten</title>
+		<script type="text/javascript">
+		</script>
+	</head>
+
+        <body>
+		<h1>tar-Konfiguration</h1>
+		<p>in Sicherung {{.Vars.File}}</p>
+		<table>
+			<form method="post" action="/backup-config/{{.Vars.File}}/tar/save">
+			<tr>
+				<td>
+					Quelle
+				</td>
+				<td>
+					<input type="text" id="source" name="source" {{if .Vars.source}}value="{{.Vars.source}}"{{end}}>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Ziel
+				</td>
+				<td>
+					<input type="text" id="target" name="target" {{if .Vars.target}}value="{{.Vars.target}}"{{end}}>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Ausschließen
+				</td>
+				<td>
+					<input type="text" id="exclude" name="exclude" {{if .Vars.exclude}}value="{{.Vars.exclude}}"{{end}}>
+				</td>
+			</tr>
+			<tr>	<td></td>
+				<td class="hint">entspricht tar --exclude </td>
+			</tr>
+			<tr>
+				<td></td>
+				<td align="right">
+				<input type="submit" value="Speichern" class="button">
+				{{if .Vars.Id}}<input type="hidden" name="Id" value="{{.Vars.Id}}">{{end}}
+				</td>
+			</tr>
+			</form>
+		</table>
+		<p><a href="/backup-config/{{.Vars.File}}">zurück zu {{.Vars.File}}</a></p>
+		<p><a href="/backup-config">alle Sicherungen</a></p>
+        </body>
+</html>

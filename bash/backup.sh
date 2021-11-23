@@ -51,6 +51,7 @@
 #                       2. mysql-PW nicht im Debug-Modus ausgeben
 #                       3. doppelte Log-Eintrage in sichere_dir_als_targz() entfernt
 #   #2021_09_28         1. dump_mysql() falscher Pfad $mysql_data_dir
+#   #2021_10_05	        1. pg_dumpall_wrapper() $pg_dumpall_parameter wurde bei mv nicht verwendet
 #########################################################
 
 #########################################################
@@ -230,7 +231,7 @@ dump_pg() {
 
     if [[ -z $docker_network ]]; then
         dbg "ohne Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/db/postgresql/data/
+        pg_dump_data_dir=/home/gisadmin/db/postgresql/data
     else
         dbg "mit Docker-Netzwerk"
         pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/pgsql/data
@@ -262,7 +263,7 @@ dump_mysql() {
     if [[ -z $docker_network ]]; then
         dbg "ohne Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{.NetworkSettings.IPAddress}}" $container_id)
-        mysql_data_dir=/home/gisadmin/db/mysql/
+        mysql_data_dir=/home/gisadmin/db/mysql
     else
         dbg "mit Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{json .}}" $container_id | jq -r ".NetworkSettings.Networks.${docker_network}.IPAddress")
@@ -336,7 +337,7 @@ pg_dumpall_wrapper(){
 
     if [[ -z $docker_network ]]; then
         dbg "ohne Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/db/postgresql/data/
+        pg_dump_data_dir=/home/gisadmin/db/postgresql/data
     else
         dbg "mit Docker-Netzwerk"
         pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/pgsql/data
@@ -344,7 +345,7 @@ pg_dumpall_wrapper(){
 
     if [[ $? -eq 0 ]]; then
         echo "pg_dumpall erfolgreich" >> "$LOGFILE"
-        mv /home/gisadmin/db/postgresql/data/"$target_name" "$BACKUP_DIR" >> "$LOGFILE"
+        mv "$pg_dump_data_dir"/"$target_name" "$BACKUP_DIR" >> "$LOGFILE"
     else
         echo "FEHLER: pg_dumpall nicht erfolgreich!" >> "$LOGFILE"
         return 1

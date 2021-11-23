@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+      	<head>
+		<link href="../static/style.css" rel="stylesheet" type="text/css">
+                <title>Sicherungen</title>
+	</head>
+
+        <body>
+		<!-- <h1>Sicherung</h1> -->
+		{{ $BackupFolder := printf "%s/%s" .Backup.BackupPath .Backup.BackupFolder}}
+		<h1>Sicherung: {{.Backup.Name}}</h1>
+		<p>Sicherungsverzeichnis: {{$BackupFolder}}</p>
+		{{if .Backup.Beschreibung }}
+			<p>Beschreibung: {{.Backup.Beschreibung}}</p>
+		{{end}}
+		{{if .Backup.DeleteAfterNDays }}
+			<p>alte Sicherungen löschen nach {{.Backup.DeleteAfterNDays}} Tagen</p>
+		{{end}}
+		{{if .Backup.DifferentialBackupDuration}}
+			<p>differenzielle Sicherung für {{.Backup.DifferentialBackupDuration}} Tage</p>
+		{{end}}
+
+		<p>zu sichernde Verzeichnisse und Dateien<a href="/backup-config/{{.Vars.File}}/tar/new" class="alignright">neu</a></p>
+		<ul>
+		{{$Filename := .Vars.File}}
+		{{range $i, $tardir := .Backup.Tar}}
+			<li>
+				{{$tardir.Source}} -> {{$BackupFolder}}/{{$tardir.TargetName}}
+				<a href="/backup-config/{{$Filename}}/tar/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/tar/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
+		{{else}}
+			<li>keine Sicherung mit tar konfiguriert</li>
+		{{end}}
+		</ul>
+
+		<p>mySQL-Dumps<a href="/backup-config/{{.Vars.File}}/mysql/new" class="alignright">neu</a></p>
+		<ul>
+		{{range $i, $mysqlitem := .Backup.MysqlDump}}
+			<li>{{$mysqlitem.DbName}}@{{$mysqlitem.ContainerId}}
+				<a href="/backup-config/{{$Filename}}/mysql/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/mysql/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
+		{{else}}
+			<li>keine mySQL-Dumps eingerichtet</li>
+		{{end}}
+		</ul>
+
+		<p>postgreSQL-Dumps<a href="/backup-config/{{.Vars.File}}/pgdump/new" class="alignright">neu</a></p>
+		<ul>
+		{{range $i, $pgitem := .Backup.PgDump}}
+			<li>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}
+				<a href="/backup-config/{{$Filename}}/pgdump/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/pgdump/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
+		{{else}}
+			<li>keine pg_dumps konfiguriert</li>
+		{{end}}
+		</ul>
+
+		<p>postgreSQL-Dumpall<a href="/backup-config/{{.Vars.File}}/pgdumpall/new" class="alignright">neu</a></p>
+		<ul>
+		{{range $i, $pgitem := .Backup.PgDumpall}}
+			<li>{{$pgitem.DbName}}@{{$pgitem.ContainerId}}
+				<a href="/backup-config/{{$Filename}}/pgdumpall/edit/{{$i}}" class="alignright">editieren</a>
+				<a href="/backup-config/{{$Filename}}/pgdumpall/delete/{{$i}}" class="alignright">löschen</a>
+			</li>
+		{{else}}
+			<li>keine pg_dumpall-Dumps konfiguriert</li>
+		{{end}}
+		</ul>
+
+
+		<p>rsync-Konfiguration</p>
+		<ul>
+		{{range $rsyncitem := .Backup.Rsync}}
+			<li>von: {{$rsyncitem.Source}} nach: {{$rsyncitem.Destination}} mit Parameter {{$rsyncitem.Parameter}}</li>
+		{{else}}
+			<li>keine rsync-Konfiguration</li>
+		{{end}}
+		</ul>
+
+		<a href="/backup-config">alle Sicherungen</a>
+		
+        </body>
+</html>
