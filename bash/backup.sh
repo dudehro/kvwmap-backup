@@ -266,7 +266,7 @@ dump_mysql() {
     else
         dbg "mit Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{json .}}" $container_id | jq -r ".NetworkSettings.Networks.${docker_network}.IPAddress")
-        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/mysql/
+        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/mysql/data
     fi
 
     if [ -f "$APPS_DIR"/"$PROD_APP"/credentials.php ]; then
