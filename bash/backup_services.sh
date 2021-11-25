@@ -34,6 +34,7 @@ do
 				FILENAME=$(echo ${MOUNT_DESTINATION} | tr '/' '_')".tar"
 				echo "sichere ${MOUNT_SOURCE}"
 				tar -cf ${SERVICE_PATH}/${FILENAME} ${MOUNT_SOURCE}
+				echo "${FILENAME}:${MOUNT_DESTINATION}" >> ${SERVICE_PATH}/tars_container_mounts
 				i=$(($i+1))
 			done < <(docker inspect ${SERVICE_NAME} --format '{{json .Mounts}}' | jq ".[$i]")
 
