@@ -5,6 +5,9 @@
     "taritem": {
       "type": "object",
       "properties": {
+        "mount_source": {
+          "type": "string"
+        },
         "mount_destination": {
           "type": "string"
         },
@@ -17,9 +20,14 @@
       }
     },
     "tar": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/taritem"
+      "type": "object",
+      "properties": {
+        "diff_backup_days": {
+          "type": "string"
+        },
+        "directories": {
+          "$ref":"#/definitions/taritem"
+        }
       }
     },
     "mysqldump": {
@@ -28,12 +36,6 @@
         "type": "object",
         "properties": {
           "db_name": {
-            "type": "string"
-          },
-          "db_user": {
-            "type": "string"
-          },
-          "db_pw": {
             "type": "string"
           },
           "mysql_dump_parameter": {
@@ -90,6 +92,20 @@
         }
       }
     },
+    "mysql": {
+      "type": "object",
+      "properties": {
+        "db_user": {
+          "type": "string"
+        },
+        "db_password": {
+          "type": "string"
+        }
+      },
+      "mysqldump": {
+        "$ref":"#/definitions/mysqldump"
+      }
+    },
     "service": {
       "type": "object",
       "properties": {
@@ -104,7 +120,7 @@
           "$ref": "#/definitions/tar"
         },
         "mysql": {
-          "$ref": "#/definitions/mysqldump"
+          "$ref": "#/definitions/mysql"
         },
         "postgres": {
           "$ref": "#/definitions/postgres"

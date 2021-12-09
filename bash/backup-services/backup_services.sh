@@ -32,13 +32,11 @@ function targz(){
 		# 3. Daten sichern
 		MOUNT_SOURCE=$(docker inspect ${SERVICE_NAME} --format '{{json .Mounts}}' | jq -r ".[$i].Source")
 		MOUNT_DESTINATION=$(docker inspect ${SERVICE_NAME} --format '{{json .Mounts}}' | jq -r ".[$i].Destination")
-		if [ "$(jq -r ".networks[] | select(.name==\"${NETWORK_NAME}") | .services[] | select(.name==\"${SERVICE_NAME}\") | .tar[] | select(.mount_destination==\"${MOUNT_DESTINATION}")" config.json | .save_data)" = true ]; then
-
+		if [ "$(jq -r ".networks[] | select(.name==\"${NETWORK_NAME}\") | .services[] | select(.name==\"${SERVICE_NAME}\") | .tar[] | select(.mount_destination==\"${MOUNT_DESTINATION}\") | .save_data" ${CONFIG_FILE} )" = true ]; then
 			FILENAME=$(echo ${MOUNT_DESTINATION} | tr '/' '_')".tar"
-			echo "sichere ${MOUNT_SOURCE}"
+			echo "sichere ${MOUNT_SOURCE}:${MOUNT_DESTINATION}"
 			tar -cf ${SERVICE_PATH}/${FILENAME} ${MOUNT_SOURCE}
 			echo "${MOUNT_SOURCE}:${MOUNT_DESTINATION}:${FILENAME}" >> ${SERVICE_PATH}/tars_container_mounts
-
 		fi
 		i=$(($i+1))
 	done < <(docker inspect ${SERVICE_NAME} --format '{{json .Mounts}}' | jq ".[$i]")
