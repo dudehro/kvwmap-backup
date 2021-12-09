@@ -38,10 +38,11 @@ for network in nw_list:
                 file.write(chunk)
 
         # 3. Mounts sichern
+
         for mount in container.attrs['Mounts']:
             print("sichere Mount: " + mount['Destination'])
             tarname = mount['Destination'].replace('/','_')
             print(mount['Source'] + ":" + mount['Destination'], file=open( os.path.join(service_path, 'tars_container_mounts'), 'a'))
-            with tarfile.open( os.path.join(service_path, tarname + '.tar.gz'), mode='w:gz') as archive:
-                archive.add( mount['Source'] , recursive=True)
+#            with tarfile.open( os.path.join(service_path, tarname + '.tar.gz'), mode='w:gz') as archive:
+#                archive.add( mount['Source'] , recursive=True)
 

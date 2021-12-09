@@ -1,0 +1,24 @@
+{
+    "backup_path":"/home/gisadmin/Sicherungen/networks",
+    "networks":[
+      {"name":"kvwmap_prod",
+       "save_network":true,
+       "services":[
+         {"name":"kvwmap_prod_pgsql_1",
+          "save_service":true,
+          "postgres": {
+            "db_user":"postgres",
+            "db_name":"kvwmapsp",
+            "pgdumpall":[
+              {"pg_dumpall_parameter":""}
+            ]
+          },
+          "tar":[
+            {"mount_destination":"/var/www","save_data":false},
+            {"mount_destination":"/root/.pgpass","save_data":true}
+          ]
+         }
+       ]
+      }
+    ]
+}
