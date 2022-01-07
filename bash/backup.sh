@@ -234,7 +234,7 @@ dump_pg() {
         pg_dump_data_dir=/home/gisadmin/db/postgresql/data
     else
         dbg "mit Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/pgsql/data
+        pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/services/pgsql/data
     fi
 
     if [[ $? -eq 0 ]]; then
@@ -267,7 +267,7 @@ dump_mysql() {
     else
         dbg "mit Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{json .}}" $container_id | jq -r ".NetworkSettings.Networks.${docker_network}.IPAddress")
-        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/mysql/data
+        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/services/mysql/data
     fi
 
     if [ -f "$APPS_DIR"/"$PROD_APP"/credentials.php ]; then
@@ -340,7 +340,7 @@ pg_dumpall_wrapper(){
         pg_dump_data_dir=/home/gisadmin/db/postgresql/data
     else
         dbg "mit Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/pgsql/data
+        pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/services/pgsql/data
     fi
 
     if [[ $? -eq 0 ]]; then
