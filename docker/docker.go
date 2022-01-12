@@ -19,19 +19,6 @@ func ListContainers() ([]types.Container) {
     return containers
 }
 
-func InspectContainer(containerID string) (ypes.ContainerJSON) {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		panic(err)
-	}
-
-	container, err := cli.ContainerInspect(context.Background(), containerID)
-	if err != nil {
-		panic(err)
-	}
-    return container
-}
-
 func ListNetworks() ([]types.NetworkResource) {
     cli, err := client.NewClientWithOpts(client.FromEnv)
     if err != nil {
@@ -44,6 +31,19 @@ func ListNetworks() ([]types.NetworkResource) {
     }
 
     return networks
+}
+
+func InspectContainer(containerID string) (types.ContainerJSON) {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
+
+	container, err := cli.ContainerInspect(context.Background(), containerID)
+	if err != nil {
+		panic(err)
+    }
+    return container
 }
 
 func InspectNetwork(networkID string) (types.NetworkResource) {
@@ -60,3 +60,17 @@ func InspectNetwork(networkID string) (types.NetworkResource) {
     return network
 }
 
+func InspectImage(imageID string) (types.ImageInspect) {
+    cli, err := client.NewClientWithOpts(client.FromEnv)
+    if err != nil {
+        panic(err)
+    }
+
+    image, _, err := cli.ImageInspectWithRaw(context.Background(), imageID)
+    if err != nil {
+        panic(err)
+    }
+
+    return image
+
+}

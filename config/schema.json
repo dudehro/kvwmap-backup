@@ -26,8 +26,11 @@
           "type": "string"
         },
         "directories": {
-          "$ref":"#/definitions/taritem"
-        }
+          "type": "array",
+          "items": {
+              "$ref":"#/definitions/taritem"
+          }
+	    }
       }
     },
     "mysqldump": {
@@ -116,6 +119,9 @@
           "type": "boolean",
           "default": true
         },
+        "image": {
+          "type": "string"
+        },
         "tar": {
           "$ref": "#/definitions/tar"
         },
@@ -135,6 +141,9 @@
         },
         "save_network": {
           "type": "boolean"
+        },
+        "subnet": {
+          "type": "string"
         },
         "services": {
           "type": "array",
