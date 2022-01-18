@@ -15,7 +15,7 @@ func main(){
         panic(err.Error())
     }
 
-    modeFlag := flag.String("mode", "test", "Mode to run the tool, can be create, backup, test")
+    modeFlag := flag.String("mode", "ls", "Mode to run the tool, can be create, backup, ls")
 
     flag.Parse()
 
@@ -24,7 +24,7 @@ func main(){
         create.New()
     } else if *modeFlag == "backup" {
         fmt.Println("backup-Mode")
-    } else if *modeFlag == "test" {
+    } else if *modeFlag == "ls" {
         networks := docker.ListNetworks()
         for _,network := range networks {
             fmt.Printf("Network %s\n", network.Name)

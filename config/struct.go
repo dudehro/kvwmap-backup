@@ -15,6 +15,7 @@ type Backup struct {
 type Mysql struct {
   DbPassword string `json:"db_password,omitempty"`
   DbUser string `json:"db_user,omitempty"`
+  Mysqldump []*MysqldumpItems `json:"mysqldump,omitempty"`
 }
 
 // MysqldumpItems 
@@ -31,8 +32,8 @@ type Network struct {
   Subnet string `json:"subnet,omitempty"`
 }
 
-// PgdumpItems 
-type PgdumpItems struct {
+// Pgdump 
+type Pgdump struct {
   IncludeListedSchemas bool `json:"include_listed_schemas,omitempty"`
   PgDumpParameter string `json:"pg_dump_parameter,omitempty"`
   Schemas []string `json:"schemas,omitempty"`
@@ -47,7 +48,8 @@ type PgdumpallItems struct {
 type Postgres struct {
   DbName string `json:"db_name,omitempty"`
   DbUser string `json:"db_user,omitempty"`
-  Pgdump []*PgdumpItems `json:"pgdump,omitempty"`
+  Host string `json:"host,omitempty"`
+  Pgdump *Pgdump `json:"pgdump,omitempty"`
   Pgdumpall []*PgdumpallItems `json:"pgdumpall,omitempty"`
 }
 
@@ -73,4 +75,5 @@ type Taritem struct {
   MountDestination string `json:"mount_destination,omitempty"`
   MountSource string `json:"mount_source,omitempty"`
   SaveData bool `json:"save_data,omitempty"`
+  SavedByService string `json:"saved_by_service,omitempty"`
 }

@@ -37,6 +37,14 @@ func AddTarItem(container *Service, source string, destination string) (*Service
     return container
 }
 
+func AddPostgresContainer(container *Service, dbName string, dbUser string) {
+    if container == nil {
+        log.Fatal()
+    }
+    pg := Postgres{DbName: dbName, DbUser: dbUser}
+    container.Postgres = &pg
+}
+
 func IsContainerUnique(containerID string, networks []*Network) (bool) {
     containercount := 0
 //    fmt.Printf("Type: %T, Values: %+v \n", networks, networks)

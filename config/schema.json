@@ -14,6 +14,9 @@
         "save_data": {
           "type": "boolean"
         },
+        "saved_by_service": {
+          "type": "string"
+        },
         "exclude_dirs": {
           "type": "string"
         }
@@ -28,9 +31,9 @@
         "directories": {
           "type": "array",
           "items": {
-              "$ref":"#/definitions/taritem"
+            "$ref": "#/definitions/taritem"
           }
-	    }
+        }
       }
     },
     "mysqldump": {
@@ -48,23 +51,20 @@
       }
     },
     "pgdump": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "include_listed_schemas": {
-            "type": "boolean"
-          },
-          "schemas": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "pg_dump_parameter": {
-            "type": "string"
-          }
+      "type": "object",
+      "properties": {
+      "include_listed_schemas": {
+        "type": "boolean"
+      },
+      "schemas": {
+        "type": "array",
+        "items": {
+          "type": "string"
         }
+      },
+      "pg_dump_parameter": {
+        "type": "string"
+      }
       }
     },
     "pgdumpall": {
@@ -87,6 +87,9 @@
         "db_name": {
           "type": "string"
         },
+        "host": {
+          "type": "string"
+        },
         "pgdump": {
           "$ref": "#/definitions/pgdump"
         },
@@ -103,10 +106,10 @@
         },
         "db_password": {
           "type": "string"
+        },
+        "mysqldump": {
+          "$ref": "#/definitions/mysqldump"
         }
-      },
-      "mysqldump": {
-        "$ref":"#/definitions/mysqldump"
       }
     },
     "service": {

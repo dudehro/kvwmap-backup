@@ -1,9 +1,13 @@
 package docker
 
 import (
+    "log"
+    "fmt"
     "context"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+    "os/exec"
+//    "bufio"
 )
 
 func ListContainers() ([]types.Container) {
@@ -74,3 +78,74 @@ func InspectImage(imageID string) (types.ImageInspect) {
     return image
 
 }
+
+func DockerExec(containerID string, cmd string, args ...string) (string){
+    args1 := []string{"exec", "-i", containerID, cmd}
+    args2 := append(args1, args...)
+
+    fmt.Println( exec.Command("docker", args2...).String() )
+    out, err := exec.Command("docker", args2...).Output()
+    if err != nil {
+        log.Println(err)
+    }
+    fmt.Println(string(out))
+    return string(out)
+}
+
+func Exec3(cmd string, args ...string) (string) {
+    out, err := exec.Command(cmd, args...).Output()
+    fmt.Println(string(out))
+    if err != nil {
+        log.Println(err)
+    }
+    return string(out)
+}
+
+
+/*
+func containerExec(containerID string, cmd []string) error {
+    cli, err := client.NewClientWithOpts(client.FromEnv)
+    if err != nil {
+        panic(err)
+    }
+
+	execOpts := types.ExecConfig{
+		AttachStdin:  true,
+		AttachStdout: true,
+		AttachStderr: true,
+		Cmd:          cmd,
+	}
+
+	resp, err := cli.ContainerExecCreate(context.Background(), containerID, execOpts)
+	if err != nil {
+		return err
+	}
+
+	respTwo, err := cli.ContainerExecAttach(context.Background(), resp.ID, types.ExecConfig{})
+	if err != nil {
+		return err
+	}
+	defer respTwo.Close()
+
+	err = cli.ContainerExecStart(context.Background(), resp.ID, types.ExecStartCheck{})
+	if err != nil {
+		return err
+	}
+
+	running := true
+	for running {
+		respThree, err := cli.ContainerExecInspect(context.Background(), resp.ID)
+		if err != nil {
+			panic(err)
+		}
+
+		if !respThree.Running {
+			running = false
+		}
+
+        time.Sleep(250 * time.Millisecond)
+	}
+
+	return nil
+}
+*/
