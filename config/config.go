@@ -1,69 +1,107 @@
 package config
 
 import (
-    "fmt"
+//    "fmt"
     "log"
     "encoding/json"
     "io/ioutil"
+//    "kvwmap-backup/config"
 )
 
-func NewConfig(Path string) Backup {
+func NewConfig(Path string) *Backup {
     p := Backup{BackupPath: Path}
-    return p
+    return &p
 }
 
-func AddNetwork(backup *Backup, network Network) (*Backup, *Network){
+func AddNetwork2Backup(backup *Backup, name string, subnet string) (*Network){
     if backup == nil {
         log.Fatal()
     }
+    network := Network{Name: name, Subnet: subnet}
     backup.Networks = append(backup.Networks, &network)
-    return backup, &network
+    return &network
 }
 
-func AddContainer(network *Network, container Service) (*Network, *Service) {
-    if network == nil {
-        log.Fatal()
-    }
-    container.Tar = &Tar{}
-    network.Services = append(network.Services, &container)
-    return network, &container
-}
-
-func AddTarItem(container *Service, source string, destination string) (*Service) {
+func AddNetwork2Container(container *Service, networkname string) {
     if container == nil {
         log.Fatal()
     }
-    container.Tar.Directories = append(container.Tar.Directories, &Taritem{MountSource: source, MountDestination: destination} )
-    return container
+    container.Networks = append(container.Networks, networkname)
 }
 
-func AddPostgresContainer(container *Service, dbName string, dbUser string) {
+func AddContainer2Backup(backup *Backup, image string, name string, network string) (*Service) {
+    if backup == nil {
+        log.Fatal()
+    }
+    service := Service{Image: image, Name: name, Networks: []string{network} }
+    backup.Services = append(backup.Services, &service)
+    return &service
+}
+
+func AddMount(backup *Backup, container *Service, source string, destination string) (*Mount) {
+    if backup == nil || container == nil {
+        log.Fatal()
+    }
+    mount := Mount{MountSource: source, MountDestination: destination, Services: []string{container.Name}}
+    backup.Mounts = append(backup.Mounts, &mount)
+    return &mount
+}
+
+func AddContainer2Mount(container *Service, mount *Mount) {
+    if container == nil || mount == nil {
+        log.Fatal()
+    }
+    mount.Services = append(mount.Services, container.Name)
+}
+
+func AddPostgres2Backup(backup *Backup, container *Service, dbName string, dbUser string, dbHost string) (*PgDump) {
     if container == nil {
         log.Fatal()
     }
-    pg := Postgres{DbName: dbName, DbUser: dbUser}
-    container.Postgres = &pg
+    pg := PgDump{DbName: dbName, DbUser: dbUser, DbHost: dbHost, Services: []string{container.Name}}
+    backup.PgDumps = append(backup.PgDumps, &pg)
+    return &pg
 }
 
-func IsContainerUnique(containerID string, networks []*Network) (bool) {
-    containercount := 0
-//    fmt.Printf("Type: %T, Values: %+v \n", networks, networks)
+func AddSchema2PgDump(pgdump *PgDump, schema string) {
+    pgdump.Schemas = append(pgdump.Schemas, schema)
+}
 
-    for _,network := range networks {
-        for _,service := range network.Services {
-            if service.Name == containerID {
-                containercount++
-            }
-        }
+func AddPgDumpAll2Backup(backup *Backup, container *Service, dbName string, dbUser string, dbHost string, parameters []string) (*PgDumpall) {
+    if backup == nil || container == nil {
+        log.Fatal()
     }
-    return containercount <= 1
+    pgdumpall := PgDumpall{DbHost: dbHost, DbName: dbName, DbUser: dbUser, Parameters: parameters, Services: []string{container.Name}}
+    backup.PgDumpalls = append(backup.PgDumpalls, &pgdumpall)
+    return &pgdumpall
 }
 
-func WriteFile(location string, backup Backup) {
+func AddMysql2Backup(backup *Backup, container *Service, dbUser string, dbPassword string, databases []string, services []string, parameters []string) (*Mysql) {
+    if backup == nil || container == nil {
+        log.Fatal()
+    }
+    mysql := Mysql{DbUser: dbUser, DbPassword: dbPassword, Databases: databases, Services: services, Parameters: parameters}
+    backup.Mysqls = append(backup.Mysqls, &mysql)
+    return &mysql
+}
+
+func AddMysqlDB2Container(mysql *Mysql, container *Service, database string) {
+    if mysql == nil || container == nil {
+        log.Fatal()
+    }
+    mysql.Databases = append(mysql.Databases, database)
+}
+
+func WriteFile(location string, backup *Backup) {
     file, _ := json.MarshalIndent(backup, "", " ")
 	_ = ioutil.WriteFile(location, file, 0644)
 }
 
-func Print(f string){
-    fmt.Println(f)
+func IsMountInBackup(backup *Backup, source string) (bool) {
+    for _, mount := range backup.Mounts {
+        if mount.MountSource == source {
+            return true
+        }
+    }
+    return false
 }

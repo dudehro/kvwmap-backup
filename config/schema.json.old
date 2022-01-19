@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/backup",
+  "definitions": {
+    "taritem": {
+      "type": "object",
+      "properties": {
+        "mount_source": {
+          "type": "string"
+        },
+        "mount_destination": {
+          "type": "string"
+        },
+        "save_data": {
+          "type": "boolean"
+        },
+        "saved_by_service": {
+          "type": "string"
+        },
+        "exclude_dirs": {
+          "type": "string"
+        }
+      }
+    },
+    "tar": {
+      "type": "object",
+      "properties": {
+        "diff_backup_days": {
+          "type": "string"
+        },
+        "directories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/taritem"
+          }
+        }
+      }
+    },
+    "mysqldump": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "db_name": {
+            "type": "string"
+          },
+          "mysql_dump_parameter": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pgdump": {
+      "type": "object",
+      "properties": {
+      "include_listed_schemas": {
+        "type": "boolean"
+      },
+      "schemas": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "pg_dump_parameter": {
+        "type": "string"
+      }
+      }
+    },
+    "pgdumpall": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pg_dumpall_parameter": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "postgres": {
+      "type": "object",
+      "properties": {
+        "db_user": {
+          "type": "string"
+        },
+        "db_name": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "pgdump": {
+          "$ref": "#/definitions/pgdump"
+        },
+        "pgdumpall": {
+          "$ref": "#/definitions/pgdumpall"
+        }
+      }
+    },
+    "mysql": {
+      "type": "object",
+      "properties": {
+        "db_user": {
+          "type": "string"
+        },
+        "db_password": {
+          "type": "string"
+        },
+        "mysqldump": {
+          "$ref": "#/definitions/mysqldump"
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "save_service": {
+          "type": "boolean",
+          "default": true
+        },
+        "image": {
+          "type": "string"
+        },
+        "tar": {
+          "$ref": "#/definitions/tar"
+        },
+        "mysql": {
+          "$ref": "#/definitions/mysql"
+        },
+        "postgres": {
+          "$ref": "#/definitions/postgres"
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "save_network": {
+          "type": "boolean"
+        },
+        "subnet": {
+          "type": "string"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/service"
+          }
+        }
+      }
+    },
+    "backup": {
+      "type": "object",
+      "properties": {
+        "backup_path": {
+          "type": "string"
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/network"
+          }
+        }
+      }
+    }
+  }
+}

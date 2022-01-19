@@ -8,72 +8,59 @@ type Root *Backup
 // Backup 
 type Backup struct {
   BackupPath string `json:"backup_path,omitempty"`
+  Mounts []*Mount `json:"mounts,omitempty"`
+  Mysqls []*Mysql `json:"mysqls,omitempty"`
   Networks []*Network `json:"networks,omitempty"`
+  PgDumpalls []*PgDumpall `json:"pg_dumpalls,omitempty"`
+  PgDumps []*PgDump `json:"pg_dumps,omitempty"`
+  Services []*Service `json:"services,omitempty"`
+}
+
+// Mount 
+type Mount struct {
+  ExcludeDirs string `json:"exclude_dirs,omitempty"`
+  MountDestination string `json:"mount_destination,omitempty"`
+  MountSource string `json:"mount_source,omitempty"`
+  Services []string `json:"services,omitempty"`
 }
 
 // Mysql 
 type Mysql struct {
+  Databases []string `json:"databases,omitempty"`
   DbPassword string `json:"db_password,omitempty"`
   DbUser string `json:"db_user,omitempty"`
-  Mysqldump []*MysqldumpItems `json:"mysqldump,omitempty"`
-}
-
-// MysqldumpItems 
-type MysqldumpItems struct {
-  DbName string `json:"db_name,omitempty"`
-  MysqlDumpParameter string `json:"mysql_dump_parameter,omitempty"`
+  Parameters []string `json:"parameters,omitempty"`
+  Services []string `json:"services,omitempty"`
 }
 
 // Network 
 type Network struct {
   Name string `json:"name,omitempty"`
-  SaveNetwork bool `json:"save_network,omitempty"`
-  Services []*Service `json:"services,omitempty"`
   Subnet string `json:"subnet,omitempty"`
 }
 
-// Pgdump 
-type Pgdump struct {
-  IncludeListedSchemas bool `json:"include_listed_schemas,omitempty"`
-  PgDumpParameter string `json:"pg_dump_parameter,omitempty"`
-  Schemas []string `json:"schemas,omitempty"`
-}
-
-// PgdumpallItems 
-type PgdumpallItems struct {
-  PgDumpallParameter string `json:"pg_dumpall_parameter,omitempty"`
-}
-
-// Postgres 
-type Postgres struct {
+// PgDump 
+type PgDump struct {
+  DbHost string `json:"db_host,omitempty"`
   DbName string `json:"db_name,omitempty"`
   DbUser string `json:"db_user,omitempty"`
-  Host string `json:"host,omitempty"`
-  Pgdump *Pgdump `json:"pgdump,omitempty"`
-  Pgdumpall []*PgdumpallItems `json:"pgdumpall,omitempty"`
+  Parameters []string `json:"parameters,omitempty"`
+  Schemas []string `json:"schemas,omitempty"`
+  Services []string `json:"services,omitempty"`
+}
+
+// PgDumpall 
+type PgDumpall struct {
+  DbHost string `json:"db_host,omitempty"`
+  DbName string `json:"db_name,omitempty"`
+  DbUser string `json:"db_user,omitempty"`
+  Parameters []string `json:"parameters,omitempty"`
+  Services []string `json:"services,omitempty"`
 }
 
 // Service 
 type Service struct {
   Image string `json:"image,omitempty"`
-  Mysql *Mysql `json:"mysql,omitempty"`
   Name string `json:"name,omitempty"`
-  Postgres *Postgres `json:"postgres,omitempty"`
-  SaveService bool `json:"save_service,omitempty"`
-  Tar *Tar `json:"tar,omitempty"`
-}
-
-// Tar 
-type Tar struct {
-  DiffBackupDays string `json:"diff_backup_days,omitempty"`
-  Directories []*Taritem `json:"directories,omitempty"`
-}
-
-// Taritem 
-type Taritem struct {
-  ExcludeDirs string `json:"exclude_dirs,omitempty"`
-  MountDestination string `json:"mount_destination,omitempty"`
-  MountSource string `json:"mount_source,omitempty"`
-  SaveData bool `json:"save_data,omitempty"`
-  SavedByService string `json:"saved_by_service,omitempty"`
+  Networks []string `json:"networks,omitempty"`
 }
