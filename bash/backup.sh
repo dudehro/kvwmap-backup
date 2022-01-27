@@ -121,20 +121,21 @@ dbg "BACKUP_PATH=${BACKUP_PATH}"
 dbg "CONFIG_FILE=${CONFIG_FILE}"
 dbg "LOGFILE=${LOGFILE}"
 
-
 delete_diff_tarlog(){
-  dbg "entering delete_diff_tarlog()"
-  local diff_duration=$(cat $CONFIG_FILE | jq -r ".differential_backup_duration // empty")
+    dbg "entering delete_diff_tarlog()"
+    local dow=$(cat $CONFIG_FILE | jq -r ".delete_diff_on_dow // empty")
 
-  if [ -n "$diff_duration" ]; then
-    ls -alh "$source/$tarlog" >> "$LOGFILE"
-    while read TARLOG
-    do
-      echo "tar.difflog loeschen" >> "$LOGFILE"
-      DELETED_TARLOG=TRUE
-      rm -f "$source/$tarlog"
-    done < <(find "$1" -type f -name "$tarlog" -mtime "+$diff_duration")
-  fi
+    if [ "$dow" = "$(date +%u)" ]; then
+
+        TAR_COUNT=$(cat $CONFIG_FILE | jq '.tar | length')
+        if (( $TAR_COUNT > 0 )); then
+            for (( i=0; i < $TAR_COUNT; i++ )); do
+                local TARDIR=$(cat $CONFIG_FILE | jq -r ".tar[$i].source")
+                rm ${TARDIR}/.tar.difflog
+            done
+        fi
+    fi
+
   dbg "leaving delete_diff_tarlog()"
 }
 
@@ -145,17 +146,14 @@ sichere_dir_als_targz() {
     local source=$(cat $CONFIG_FILE | jq -r ".tar[$1].source")
     local target=$BACKUP_DIR/$(cat $CONFIG_FILE | jq -r ".tar[$1].target_name")
     local tar_exclude=$(cat $CONFIG_FILE | jq -r ".tar[$1].exclude // empty")
-    local diff_duration=$(cat $CONFIG_FILE | jq -r ".differential_backup_duration // empty")
+    local dow=$(cat $CONFIG_FILE | jq -r ".delete_diff_on_dow // empty")
 
-    local tarlog=tar.difflog
+    local tarlog=.tar.difflog
 
     dbg "source=$source"
     dbg "target=$target"
-    dbg "diff_duration=$diff_duration"
     dbg "tar_exclude=$tar_exclude"
-    dbg "diff_duration=$diff_duration"
-
-    delete_diff_tarlog $source
+    dbg "dow=$dow"
 
     if [ -n "$tar_exclude" ]; then
         tar_exclude=$(eval echo --exclude=$tar_exclude)
@@ -163,7 +161,8 @@ sichere_dir_als_targz() {
 
     #tar.difflog vorhanden und diff.Sicherung konfiguriert?
 #    if [ -f "$source/$tarlog" ] && [ -n "$diff_duration" ];  then
-    if [ -n "$diff_duration" ];  then
+
+    if [ -n "$dow" ];  then
         if [ -f "$source/$tarlog" ]; then
             mtime=$(stat -c "%y" "$source/$tarlog")
             cp "$source/$tarlog" "$source/$tarlog"_tmp
@@ -190,7 +189,7 @@ sichere_dir_als_targz() {
 
     else
         mtime=
-        echo "kein tar.difflog gefunden, mache Vollsicherung" >> "$LOGFILE"
+        echo "kein tar.difflog gefunden oder keine Inkrementelle-Sicherung konfiguriert, mache Vollsicherung" >> "$LOGFILE"
         dbg "Kein Tarlog, Vollsicherung"
 
         echo "Sichere Verzeichnis $source nach $target" >> "$LOGFILE"
@@ -387,6 +386,9 @@ if [ "$ABORT_BACKUP" = FALSE ]; then
     #########################################################
     ## #1 Vereichnisse sichern                              #
     #########################################################
+
+    delete_diff_tarlog
+
     TAR_COUNT=$(cat $CONFIG_FILE | jq '.tar | length')
     if (( $TAR_COUNT > 0 )); then
         echo "1/7 Verzeichnisse werden gesichert" >> "$LOGFILE"
@@ -493,6 +495,7 @@ if [ "$ABORT_BACKUP" = FALSE ]; then
     ps -eo pid,user,cmd,%mem,%cpu,etime,euser,egroup,ni > "$BACKUP_DIR"/systemstate.log
     #Speicher
     lsblk -o name,size,ro,type,mountpoint,uuid,owner,group,tran >> "$BACKUP_DIR"/systemstate.log
+    df -h  >> "$BACKUP_DIR"/systemstate.log
     #Docker Container
     docker inspect  $(docker ps -aq) >> "$BACKUP_DIR"/systemstate.log
     #user+gruppen
