@@ -52,6 +52,8 @@
 #                       3. doppelte Log-Eintrage in sichere_dir_als_targz() entfernt
 #   #2021_09_28         1. dump_mysql() falscher Pfad $mysql_data_dir
 #   #2021_10_05	        1. pg_dumpall_wrapper() $pg_dumpall_parameter wurde bei mv nicht verwendet
+#   #2022_01_28		1. differentielle Sicherung wird an Wochentag zurückgesetzt, nicht nach Zeitraum x
+#   #2022_01_30		1. Destination-Pfad für pgsql-Container wird dynamisch aus Docker-Inspect ausgelesen
 #########################################################
 
 #########################################################
@@ -227,14 +229,7 @@ dump_pg() {
     dbg "docker_network=$docker_network"
 
     docker exec $container_id bash -c "pg_dump -Fc -U $db_user -f /var/lib/postgresql/data/$target_name $database" 2>> "$LOGFILE"
-
-    if [[ -z $docker_network ]]; then
-        dbg "ohne Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/db/postgresql/data
-    else
-        dbg "mit Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/services/pgsql/data
-    fi
+    pg_dump_data_dir=$(docker inspect $container_id --format "{{json .Mounts}}" | jq -r '.[]|select(.Destination=="/var/lib/postgresql/data").Source')
 
     if [[ $? -eq 0 ]]; then
         echo "PG-Dump erfolgreich für $database" >> "$LOGFILE"
@@ -262,12 +257,14 @@ dump_mysql() {
     if [[ -z $docker_network ]]; then
         dbg "ohne Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{.NetworkSettings.IPAddress}}" $container_id)
-        mysql_data_dir=/home/gisadmin/db/mysql
+#        mysql_data_dir=/home/gisadmin/db/mysql
     else
         dbg "mit Docker-Netzwerk"
         mysql_host=$(docker inspect --format "{{json .}}" $container_id | jq -r ".NetworkSettings.Networks.${docker_network}.IPAddress")
-        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/services/mysql/data
+#        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/services/mysql/data
     fi
+
+    mysql_data_dir=$(docker inspect $container_id --format "{{json .Mounts}}" | jq -r '.[]|select(.Destination=="/var/lib/mysql").Source')
 
     if [ -f "$APPS_DIR"/"$PROD_APP"/credentials.php ]; then
 
@@ -332,16 +329,8 @@ pg_dumpall_wrapper(){
     dbg "target_name=$target_name"
     dbg "pg_dumpall_parameter=$pg_dumpall_parameter"
 
+    pg_dump_data_dir=$(docker inspect $container_id --format "{{json .Mounts}}" | jq -r '.[]|select(.Destination=="/var/lib/postgresql/data").Source')
     docker exec $container_id bash -c "pg_dumpall -U $db_user -l $db_name ${pg_dumpall_parameter} -f /var/lib/postgresql/data/$target_name"
-
-    if [[ -z $docker_network ]]; then
-        dbg "ohne Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/db/postgresql/data
-    else
-        dbg "mit Docker-Netzwerk"
-        pg_dump_data_dir=/home/gisadmin/networks/"$docker_network"/services/pgsql/data
-    fi
-
     if [[ $? -eq 0 ]]; then
         echo "pg_dumpall erfolgreich" >> "$LOGFILE"
         mv "$pg_dump_data_dir"/"$target_name" "$BACKUP_DIR" >> "$LOGFILE"
