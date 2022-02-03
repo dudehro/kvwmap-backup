@@ -1,16 +1,16 @@
 package docker
 
 import (
-    "log"
-    "fmt"
-    "context"
+	"context"
+	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
-    "os/exec"
-//    "bufio"
+	"log"
+	"os/exec"
+	//    "bufio"
 )
 
-func ListContainers() ([]types.Container) {
+func ListContainers() []types.Container {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -20,24 +20,24 @@ func ListContainers() ([]types.Container) {
 	if err != nil {
 		panic(err)
 	}
-    return containers
+	return containers
 }
 
-func ListNetworks() ([]types.NetworkResource) {
-    cli, err := client.NewClientWithOpts(client.FromEnv)
-    if err != nil {
-        panic(err)
-    }
+func ListNetworks() []types.NetworkResource {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
 
-    networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
-    if err != nil {
-        panic(err)
-    }
+	networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
+	if err != nil {
+		panic(err)
+	}
 
-    return networks
+	return networks
 }
 
-func InspectContainer(containerID string) (types.ContainerJSON) {
+func InspectContainer(containerID string) types.ContainerJSON {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
@@ -46,61 +46,60 @@ func InspectContainer(containerID string) (types.ContainerJSON) {
 	container, err := cli.ContainerInspect(context.Background(), containerID)
 	if err != nil {
 		panic(err)
-    }
-    return container
+	}
+	return container
 }
 
-func InspectNetwork(networkID string) (types.NetworkResource) {
-    cli, err := client.NewClientWithOpts(client.FromEnv)
-    if err != nil {
-        panic(err)
-    }
+func InspectNetwork(networkID string) types.NetworkResource {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
 
-    network, err := cli.NetworkInspect(context.Background(), networkID, types.NetworkInspectOptions{})
-    if err != nil {
-        panic(err)
-    }
+	network, err := cli.NetworkInspect(context.Background(), networkID, types.NetworkInspectOptions{})
+	if err != nil {
+		panic(err)
+	}
 
-    return network
+	return network
 }
 
-func InspectImage(imageID string) (types.ImageInspect) {
-    cli, err := client.NewClientWithOpts(client.FromEnv)
-    if err != nil {
-        panic(err)
-    }
+func InspectImage(imageID string) types.ImageInspect {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
 
-    image, _, err := cli.ImageInspectWithRaw(context.Background(), imageID)
-    if err != nil {
-        panic(err)
-    }
+	image, _, err := cli.ImageInspectWithRaw(context.Background(), imageID)
+	if err != nil {
+		panic(err)
+	}
 
-    return image
+	return image
 
 }
 
-func DockerExec(containerID string, cmd string, args ...string) (string){
-    args1 := []string{"exec", "-i", containerID, cmd}
-    args2 := append(args1, args...)
+func DockerExec(containerID string, cmd string, args ...string) string {
+	args1 := []string{"exec", "-i", containerID, cmd}
+	args2 := append(args1, args...)
 
-    fmt.Println( exec.Command("docker", args2...).String() )
-    out, err := exec.Command("docker", args2...).Output()
-    if err != nil {
-        log.Println(err)
-    }
-    fmt.Println(string(out))
-    return string(out)
+	fmt.Println(exec.Command("docker", args2...).String())
+	out, err := exec.Command("docker", args2...).Output()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(string(out))
+	return string(out)
 }
 
-func Exec3(cmd string, args ...string) (string) {
-    out, err := exec.Command(cmd, args...).Output()
-    fmt.Println(string(out))
-    if err != nil {
-        log.Println(err)
-    }
-    return string(out)
+func Exec3(cmd string, args ...string) string {
+	out, err := exec.Command(cmd, args...).Output()
+	fmt.Println(string(out))
+	if err != nil {
+		log.Println(err)
+	}
+	return string(out)
 }
-
 
 /*
 func containerExec(containerID string, cmd []string) error {
