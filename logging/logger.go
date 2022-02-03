@@ -1,55 +1,131 @@
 package logging
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
+var globalLogger *FileLogger
+
+type LogLevel int
+
 const (
-	LogNone = iota
-	LogInfo
-	LogWarning
-	LogError
-	LogVerbose
-	LogDebug
+	LogInfo    LogLevel = 1 << iota
+	LogWarning LogLevel = 2
+	LogError   LogLevel = 4
+	LogDebug   LogLevel = 8
 )
 
 type FileLogger struct {
 	logger   *log.Logger
-	logLevel int
+	logLevel LogLevel
 }
 
 func NewFileLogger() *FileLogger {
 	return &FileLogger{
-		logger:   nil,
-		logLevel: LogInfo,
+		logger: nil,
 	}
 }
 
-func (logger *FileLogger) StartLog() error {
-	t := time.Now()
-	logfilename := fmt.Sprintf("%d-%02d-%02d", t.Year(), t.Month(), t.Day()) + ".log"
+func InitLog(logfilename string, loglevel string) *FileLogger {
+
+	newLogger := FileLogger{logLevel: ParseLogLevel(loglevel)}
+
+	if len(logfilename) == 0 {
+		logfilename = fmt.Sprintf("%d-%02d-%02d", time.Now().Year(), time.Now().Month(), time.Now().Day()) + ".log"
+	}
 	f, err := os.OpenFile(logfilename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 
-	logger.logger = log.New(f, "", log.Lmicroseconds|log.Llongfile)
-
-	//    logger.log.Print("Log startet")
-	return nil
+	newLogger.logger = log.New(f, "", log.Lmicroseconds|log.Llongfile)
+	globalLogger = &newLogger
+	return &newLogger
 }
 
-func (logger *FileLogger) Print(msg string, level int) error {
-	if logger.logger == nil {
-		return errors.New("Logger nicht korrekt initialisiert")
-	} else {
-		fmt.Printf("Adresse des Loggers: %p ; Message: %v", logger, msg)
+func (level LogLevel) SetLogLevel(newLevel LogLevel) LogLevel {
+	return level | newLevel
+}
+
+func (level LogLevel) UnsetLogLevel(removeLevel LogLevel) LogLevel {
+	return level &^ removeLevel
+}
+
+func (level LogLevel) HasLogLevel(compareLevel LogLevel) bool {
+	return level&compareLevel != 0
+}
+
+func (level LogLevel) ToString() string {
+	var levelString string
+	if level.HasLogLevel(LogInfo) {
+		levelString = levelString + "Info"
 	}
-	logger.logger.Print(msg)
-	return nil
+	if level.HasLogLevel(LogWarning) {
+		levelString = levelString + "Warning"
+	}
+	if level.HasLogLevel(LogError) {
+		levelString = levelString + "Error"
+	}
+	if level.HasLogLevel(LogDebug) {
+		levelString = levelString + "Debug"
+	}
+	return levelString
+}
+
+// Function takes level as string (see enum LogLevel) and returns the LogLevel
+func LogLevelToInt(level string) LogLevel {
+	var return_level LogLevel
+	switch strings.ToLower(level) {
+	case "info":
+		return_level = LogInfo
+	case "warning":
+		return_level = LogWarning
+	case "error":
+		return_level = LogError
+	case "debug":
+		return_level = LogDebug
+	}
+	return return_level
+}
+
+// Func takes in list of comma-separated Log-Levels, e.g. "error,warning,info"
+func ParseLogLevel(input string) LogLevel {
+	var level LogLevel
+	levels := strings.Split(input, ",")
+	for _, l := range levels {
+		level.SetLogLevel(LogLevelToInt(l))
+	}
+	return level
+}
+
+func (logger *FileLogger) Info(msg string) {
+	logger.logger.Print(msg, LogInfo)
+}
+
+func (logger *FileLogger) Warning(msg string) {
+	logger.logger.Print(msg, LogWarning)
+}
+
+func (logger *FileLogger) Error(msg string) {
+	logger.logger.Print(msg, LogError)
+}
+
+func (logger *FileLogger) Debug(msg string) {
+	logger.logger.Print(msg, LogDebug)
+}
+
+func Printf(format string, v ...interface{}) {
+	log.Printf(format, v)
+}
+
+func Println(v ...interface{}) {
+	log.Println(v)
+}
+
+func Fatal(v ...interface{}) {
+	log.Fatal(v)
 }

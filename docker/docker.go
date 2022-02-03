@@ -7,8 +7,9 @@ import (
 	"github.com/docker/docker/client"
 	"log"
 	"os/exec"
-	"path/filepath"
-	"strings"
+    "strings"
+    "path/filepath"
+	//    "bufio"
 )
 
 func ListContainers() []types.Container {

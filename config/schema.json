@@ -14,11 +14,8 @@
         "exclude_dirs": {
           "type": "string"
         },
-        "services": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "service": {
+          "type": "string"
         }
       }
     },
@@ -142,6 +139,9 @@
       "properties": {
         "backup_path": {
           "type": "string"
+        },
+        "backup_folder": {
+            "type": "string"
         },
         "networks": {
           "type": "array",

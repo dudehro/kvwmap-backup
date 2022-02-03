@@ -7,21 +7,22 @@ type Root *Backup
 
 // Backup
 type Backup struct {
-	BackupPath string       `json:"backup_path,omitempty"`
-	Mounts     []*Mount     `json:"mounts,omitempty"`
-	Mysqls     []*Mysql     `json:"mysqls,omitempty"`
-	Networks   []*Network   `json:"networks,omitempty"`
-	PgDumpalls []*PgDumpall `json:"pg_dumpalls,omitempty"`
-	PgDumps    []*PgDump    `json:"pg_dumps,omitempty"`
-	Services   []*Service   `json:"services,omitempty"`
+	BackupFolder string       `json:"backup_folder,omitempty"`
+	BackupPath   string       `json:"backup_path,omitempty"`
+	Mounts       []*Mount     `json:"mounts,omitempty"`
+	Mysqls       []*Mysql     `json:"mysqls,omitempty"`
+	Networks     []*Network   `json:"networks,omitempty"`
+	PgDumpalls   []*PgDumpall `json:"pg_dumpalls,omitempty"`
+	PgDumps      []*PgDump    `json:"pg_dumps,omitempty"`
+	Services     []*Service   `json:"services,omitempty"`
 }
 
 // Mount
 type Mount struct {
-	ExcludeDirs      string   `json:"exclude_dirs,omitempty"`
-	MountDestination string   `json:"mount_destination,omitempty"`
-	MountSource      string   `json:"mount_source,omitempty"`
-	Services         []string `json:"services,omitempty"`
+	ExcludeDirs      string `json:"exclude_dirs,omitempty"`
+	MountDestination string `json:"mount_destination,omitempty"`
+	MountSource      string `json:"mount_source,omitempty"`
+	Service          string `json:"service,omitempty"`
 }
 
 // Mysql

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/lib/pq"
+	"log"
 )
 
 var globalConnection *sql.DB
@@ -17,16 +18,16 @@ func OpenConnection(host string, port string, user string, password string, dbna
 		fmt.Println(conn_string)
 		db, err := sql.Open("postgres", conn_string)
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 
 		err = db.Ping()
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 
 		if db != nil {
-			fmt.Println("Verbindung zur Datenbank erfolgreich hergestellt.")
+			log.Println("Verbindung zur Datenbank erfolgreich hergestellt.")
 		}
 
 		globalConnection = db
@@ -39,12 +40,12 @@ func OpenConnection(host string, port string, user string, password string, dbna
 func Select(query string) *sql.Rows {
 
 	if globalConnection == nil {
-		panic(errors.New("Select nicht möglich, es besteht keine Verbindung zur DB!"))
+		log.Println(errors.New("Select nicht möglich, es besteht keine Verbindung zur DB!"))
 	}
 
 	rows, err := globalConnection.Query(query)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	//    defer rows.Close()
@@ -61,11 +62,15 @@ func ListSchemas() []string {
                 join pg_catalog.pg_user u on u.usesysid = s.nspowner
                 order by table_schema`)
 
+	if rows == nil {
+		return []string{}
+	}
+
 	for rows.Next() {
 		var table_schema string
 		err := rows.Scan(&table_schema)
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 		list = append(list, table_schema)
 	}
