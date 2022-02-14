@@ -9,6 +9,7 @@ import (
 	"os/exec"
     "strings"
     "path/filepath"
+    "path"
 	//    "bufio"
 )
 
@@ -53,14 +54,19 @@ func InspectContainer(containerID string) types.ContainerJSON {
 }
 
 func GetContainerConfigFiles(containerID string) []string {
-	var returnstr []string
-	container := InspectContainer(containerID)
-	working_dir := container.Config.Labels["com.docker.compose.project.working_dir"]
-	config_files := strings.Split(container.Config.Labels["com.docker.compose.project.config_files"], ",")
-	for _, s := range config_files {
-		returnstr = append(returnstr, filepath.Join(working_dir, s))
-	}
-	return returnstr
+    var returnstr []string
+    container := InspectContainer(containerID)
+    working_dir := container.Config.Labels["com.docker.compose.project.working_dir"]
+    config_files := strings.Split(container.Config.Labels["com.docker.compose.project.config_files"], ",")
+    for _, s := range config_files {
+        path, _ := path.Split(s)
+        if len(path) == 0 {
+            returnstr = append(returnstr, filepath.Join(working_dir, s))
+        } else {
+            returnstr = append(returnstr, s)
+        }
+    }
+    return returnstr
 }
 
 func InspectNetwork(networkID string) types.NetworkResource {

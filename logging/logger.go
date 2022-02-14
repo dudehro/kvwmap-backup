@@ -42,7 +42,7 @@ func InitLog(logfilename string, loglevel string) *FileLogger {
 		log.Fatal(err)
 	}
 
-	newLogger.logger = log.New(f, "", log.Lmicroseconds|log.Llongfile)
+	newLogger.logger = log.New(f, "", log.Ldate|log.Ltime)
 	globalLogger = &newLogger
 	return &newLogger
 }

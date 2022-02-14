@@ -7,7 +7,21 @@ import (
 	"kvwmap-backup/docker"
 	"log"
 	"os"
+    "path/filepath"
 )
+
+
+func GetHomeDir() string {
+    return filepath.Join("home","gisadmin")
+}
+
+func GetNetworkPath(network string) string {
+    return filepath.Join(GetHomeDir(),"networks", network)
+}
+
+func GetServicePath(network, service string) string {
+    return filepath.Join(GetNetworkPath(network), "services", service)
+}
 
 func GetConfig(file string) (*Backup, bool) {
 	_, err := os.Stat(file)

@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-//	"kvwmap-backup/backup"
+	"kvwmap-backup/backup"
 	"kvwmap-backup/create"
 	"kvwmap-backup/docker"
 //	"kvwmap-backup/logging"
@@ -13,15 +13,14 @@ func main() {
 
 	modeFlag := flag.String("mode", "ls", "Mode to run the tool, can be create, backup, ls")
 	fileFlag := flag.String("file", "backup.json", "file to read and write the config to")
-//	logFlag := flag.String("loglevel", "", "Loglevel: info, warning, error, debug and combinations from those")
+	logFlag := flag.String("loglevel", "", "Loglevel: info, warning, error, debug and combinations from those")
 
 	flag.Parse()
 
 	if *modeFlag == "create" {
 		create.New(*fileFlag)
 	} else if *modeFlag == "backup" {
-//		backup.StartBackup(*fileFlag, *logFlag)
-		fmt.Println("backup-Mode")
+		backup.StartBackup(*fileFlag, *logFlag)
 	} else if *modeFlag == "ls" {
 		networks := docker.ListNetworks()
 		for _, network := range networks {
