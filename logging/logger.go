@@ -103,19 +103,20 @@ func ParseLogLevel(input string) LogLevel {
 }
 
 func (logger *FileLogger) Info(msg string) {
-	logger.logger.Print(msg, LogInfo)
+	logger.logger.Print(msg)
 }
 
 func (logger *FileLogger) Warning(msg string) {
-	logger.logger.Print(msg, LogWarning)
+	logger.logger.Print(msg)
 }
 
 func (logger *FileLogger) Error(msg string) {
-	logger.logger.Print(msg, LogError)
+	logger.logger.Print(msg)
 }
 
 func (logger *FileLogger) Debug(msg string) {
-	logger.logger.Print(msg, LogDebug)
+	logger.logger.Print(msg)
+	//	logger.logger.Print(msg, LogDebug)
 }
 
 func Printf(format string, v ...interface{}) {

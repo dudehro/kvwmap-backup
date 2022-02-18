@@ -6,22 +6,31 @@ import (
 	"kvwmap-backup/backup"
 	"kvwmap-backup/create"
 	"kvwmap-backup/docker"
-//	"kvwmap-backup/logging"
+	//	"kvwmap-backup/logging"
+)
+
+type mode string
+
+const (
+	ModeCreate string = "create"
+	ModeBackup string = "backup"
+	ModeList   string = "ls"
 )
 
 func main() {
 
-	modeFlag := flag.String("mode", "ls", "Mode to run the tool, can be create, backup, ls")
-	fileFlag := flag.String("file", "backup.json", "file to read and write the config to")
-	logFlag := flag.String("loglevel", "", "Loglevel: info, warning, error, debug and combinations from those")
+	modeFlag := flag.String("mode", "ls", "Mode to run the tool, can be [create|backup|ls] ")
+	configFlag := flag.String("backupconfig", "backup.json", "file to read and write the config to/from")
+    dirFileFlag := flag.String("dirconfig", "", "file with directory structure")
+	logFlag := flag.String("loglevel", "", "Loglevel: [info|warning|error|debug]")
 
 	flag.Parse()
 
-	if *modeFlag == "create" {
-		create.New(*fileFlag)
-	} else if *modeFlag == "backup" {
-		backup.StartBackup(*fileFlag, *logFlag)
-	} else if *modeFlag == "ls" {
+	if *modeFlag == ModeCreate {
+		create.New(*configFlag)
+	} else if *modeFlag == ModeBackup {
+		backup.StartBackup(*configFlag, *dirFileFlag, *logFlag)
+	} else if *modeFlag == ModeList {
 		networks := docker.ListNetworks()
 		for _, network := range networks {
 			fmt.Printf("Network %s\n", network.Name)

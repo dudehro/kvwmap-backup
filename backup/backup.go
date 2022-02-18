@@ -3,13 +3,15 @@ package backup
 import (
 	"fmt"
 	"kvwmap-backup/config"
+	"kvwmap-backup/docker"
 	"kvwmap-backup/fileops"
 	"kvwmap-backup/logging"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
-func StartBackup(configFile string, loglevel string) {
+func StartBackup(configFile, dirFile string, loglevel string) {
 	logging.Printf("Starte Backup mit Datei %s \n", configFile)
 
 	backup, isNewBackup := config.GetConfig(configFile)
@@ -41,20 +43,30 @@ func StartBackup(configFile string, loglevel string) {
 	log.Debug("Netwerke sichern")
 	for _, netzwerk := range backup.Networks {
 
-		netzwerk_tarball := "network." + netzwerk.Name + " .tar"
-        log.Debug(netzwerk_tarball)
+		netzwerk_tarfile := filepath.Join(backupPath, "network."+netzwerk.Name+".tar")
+		netzwerk_source_dir := fileops.GetTemplateDir(dirFile, fileops.TemplateNetwork, netzwerk.Name, "", "")
 
-		fileops.TarFile( filepath.Join(config.GetNetworkPath(netzwerk.Name), "env"), netzwerk_tarball)
+		fileops.TarFile(filepath.Join(netzwerk_source_dir, "docker-compose.yml"), "", netzwerk_tarfile)
+		fileops.TarFile(filepath.Join(netzwerk_source_dir, "env"), "", netzwerk_tarfile)
+		fileops.TarFile(filepath.Join(netzwerk_source_dir, "env2"), "", netzwerk_tarfile)
 
 		log.Debug("Services sichern")
 		for _, service := range backup.Services {
-			service_tarball := netzwerk.Name + "." + service.Name + ".tar"
+			service_tarfile := filepath.Join(backupPath, netzwerk.Name+"."+strings.TrimPrefix(service.Name, "/")+".tar")
+			log.Debug(service_tarfile)
 
-			log.Debug(service_tarball)
+			//docker-compose.yamls
+			for _, configfile := range docker.GetContainerConfigFiles(service.Name) {
+				fmt.Printf("TarFile(%s, %s)\n", configfile, service_tarfile)
+				//				fileops.TarFile(configfile, "", service_tarfile)
+			}
 
 			log.Debug("Mounts sichern")
 			for _, mount := range backup.Mounts {
-				fmt.Println(mount.Service)
+				if mount.Service == service.Name {
+					fmt.Printf("TarDir(%s, %s)", mount.MountSource, service_tarfile)
+					//					fileops.TarDir(mount.MountSource, service_tarbfile)
+				}
 			}
 
 			log.Debug("mysql")

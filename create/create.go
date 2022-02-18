@@ -37,7 +37,6 @@ func New(file string) {
 	if newConfig {
 		fmt.Printf("neue Backup-Config wird in Datei %s geschrieben\n", file)
 		backup.BackupPath = ask("statische Pfad für Sicherungen [/home/gisadmin/Sicherungen/woechentlich/ = Default]: ", "/home/gisadmin/Sicherungen/woechentlich")
-		//	    backup.BackupFolder = ask("Ordner für Backup, wird an statischen Pfad angehängt [2006_01_02 = Default]: ", "2006_01_02")
 		backup.BackupFolder = fmt.Sprintf("%d-%02d-%02d", time.Now().Year(), time.Now().Month(), time.Now().Day())
 	} else {
 		fmt.Printf("bestehende Backup-Config aus Datei %s wird geändert\n", file)
@@ -71,12 +70,11 @@ func New(file string) {
 			subnet = network_details.IPAM.Config[0].Subnet
 		}
 		currentNetworkPtr := config.AddNetwork2Backup(backup, network_details.Name, subnet)
-		//        fmt.Printf("currentNetworkPtr %+v\n", currentNetworkPtr)
 
 		for _, c := range network_details.Containers {
 			docker_container := docker.InspectContainer(c.Name)
 
-			if ask(fmt.Sprintf("Container %s sichern? [J=Default/N]: ", docker_container.Name), "J") == "J" {
+			if ask(fmt.Sprintf("Container %s sichern? [J=Default/Nn]: ", docker_container.Name), "J") == "J" {
 
 				currentContainerPtr := config.AddContainer2Backup(backup, docker.InspectImage(docker_container.Image).RepoTags[0], docker_container.Name, []string{subnet})
 				config.AddNetwork2Container(currentContainerPtr, currentNetworkPtr.Name)
@@ -119,19 +117,19 @@ func createPostgres(backup *config.Backup, container *config.Service, host strin
 	pg_dump := config.AddPostgresCluster2Backup(backup, container, dbname, user, host)
 
 	for _, schema := range pgsql.ListSchemas() {
-		if ask(fmt.Sprintf("Schema %s sichern? [J=Default/N]: ", schema), "J") == "J" {
+		if ask(fmt.Sprintf("Schema %s sichern? [J=Default/Nn]: ", schema), "J") == "J" {
 			config.AddSchema2PgDump(pg_dump, schema)
 		}
 	}
 
-	if ask("Soll ein pg_dumpall-Eintrag für Rollen+Tablespaces dieses Clusters eingerichtet werden? [J=Default/N]: ", "J") == "J" {
+	if ask("Soll ein pg_dumpall-Eintrag für Rollen+Tablespaces dieses Clusters eingerichtet werden? [J=Default/Nn]: ", "J") == "J" {
 		config.AddPgDumpAll2Backup(backup, container, dbname, user, host, []string{"--globals-only"})
 	}
 }
 
 func createMysql(backup *config.Backup, container *config.Service /*, host string*/) {
 	var mysql *config.Mysql
-	if ask("Sollen die Datenbanken 'kvwmap' und 'mysql' gesichert werden? [J=Default/N]: ", "J") == "J" {
+	if ask("Sollen die Datenbanken 'kvwmap' und 'mysql' gesichert werden? [J=Default/Nn]: ", "J") == "J" {
 		mysql = config.AddMysql2Backup(backup, container, "kvwmap", "", []string{"kvwmap", "mysql"}, []string{container.Name}, []string{})
 	}
 
