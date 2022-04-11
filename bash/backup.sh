@@ -54,6 +54,7 @@
 #   #2021_10_05	        1. pg_dumpall_wrapper() $pg_dumpall_parameter wurde bei mv nicht verwendet
 #   #2022_01_28		1. differentielle Sicherung wird an Wochentag zurückgesetzt, nicht nach Zeitraum x
 #   #2022_01_30		1. Destination-Pfad für pgsql-Container wird dynamisch aus Docker-Inspect ausgelesen
+#   #2022_04_11		1. Kompression -z in rsync ausgeschaltet, führt zu Problemen bei unterschiedlichen rsync Versionen
 #########################################################
 
 #########################################################
@@ -296,7 +297,7 @@ rsync_wrapper() {
     local RS_SOURCE=$(cat $CONFIG_FILE | jq -r ".rsync[$1].source")
     local RS_TARGET=$(cat $CONFIG_FILE | jq -r ".rsync[$1].destination")
     local RS_PARAMETER=$(cat $CONFIG_FILE | jq -r ".rsync[$1].parameter")
-    local EXEC_RSYNC="rsync -avz $RS_PARAMETER $RS_SOURCE $RS_TARGET"
+    local EXEC_RSYNC="rsync -av $RS_PARAMETER $RS_SOURCE $RS_TARGET"
 
     dbg "RS_SOURCE=$RS_SOURCE"
     dbg "RS_TARGET=$RS_TARGET"
