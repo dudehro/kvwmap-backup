@@ -54,7 +54,9 @@
 #   #2021_10_05	        1. pg_dumpall_wrapper() $pg_dumpall_parameter wurde bei mv nicht verwendet
 #   #2022_01_28		1. differentielle Sicherung wird an Wochentag zurückgesetzt, nicht nach Zeitraum x
 #   #2022_01_30		1. Destination-Pfad für pgsql-Container wird dynamisch aus Docker-Inspect ausgelesen
-#   #2022_04_11		1. Kompression -z in rsync ausgeschaltet, führt zu Problemen bei unterschiedlichen rsync Versionen
+#   #2022_04_11	        1. Kompression -z in rsync ausgeschaltet, führt zu Problemen bei unterschiedlichen rsync Versionen
+#                       2. tar exit-Status 0,1 sind ok
+#                       3. tar exclude direkt übernehmen
 #########################################################
 
 #########################################################
@@ -159,7 +161,8 @@ sichere_dir_als_targz() {
     dbg "dow=$dow"
 
     if [ -n "$tar_exclude" ]; then
-        tar_exclude=$(eval echo --exclude=$tar_exclude)
+        #tar_exclude=$(eval echo --exclude=$tar_exclude)
+        tar_exclude=" --exclude=$tar_exclude "
     fi
 
     #tar.difflog vorhanden und diff.Sicherung konfiguriert?
@@ -178,7 +181,7 @@ sichere_dir_als_targz() {
           tar $tar_exclude -cf $target -g $source/$tarlog $source > /dev/null 2>> "$LOGFILE"
         fi
 
-        if [[ $? -eq 0 ]]; then
+        if [ "$?" == "0" ] || [ "$?" == "1" ]; then
             echo "Verzeichnis $source nach $target gesichert" >> "$LOGFILE"
         else
             echo "Verzeichnis $source konnte nicht gesichert werden" >> "$LOGFILE"
