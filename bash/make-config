@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# call ./make-config [name-of-config-file]
+
+CONFIG_FILE=$(pwd)/$1
+echo $CONFIG_FILE
+rm ${CONFIG_FILE}
+
+function toconf(){
+	echo ${1} >> ${CONFIG_FILE}
+#	echo ${1}
+}
+
+function rtrim-comma(){
+    head --bytes -2 ${CONFIG_FILE} > ${CONFIG_FILE}_tmp
+    mv ${CONFIG_FILE}_tmp ${CONFIG_FILE}
+}
+
+function tarconf(){
+    SOURCE=$1
+    TARGET=$2
+    EXCLUDE=$3
+    toconf '{'
+    toconf "  \"source\": \"$SOURCE\","
+    toconf "  \"target_name\": \"$TARGET\","
+    if [[ -n $EXCLUDE ]]; then
+        toconf "\"exclude\":\"$EXCLUDE\""
+    fi
+    toconf '},'
+}
+
+function pgsqlconf(){
+    NETWORK=$(echo $1 | cut -d '.' -f 1)
+    SERVICE=$(echo $1 | cut -d '.' -f 2)
+    DBNAME=$(echo $1 | cut -d '.' -f 3)
+    TARGET=$1
+    USER=$2
+    CONTAINER=${NETWORK}_${SERVICE}
+    toconf "{"
+    toconf "  \"container_id\": \"$CONTAINER\","
+    toconf "  \"db_user\": \"$USER\","
+    toconf "  \"db_name\": \"$DBNAME\","
+    toconf "  \"target_name\": \"$TARGET\","
+    toconf "  \"docker_network\": \"$NETWORK\" "
+    toconf "},"
+}
+
+function pgsqlallconf(){
+    NETWORK=$(echo $1 | cut -d '.' -f 1)
+    SERVICE=$(echo $1 | cut -d '.' -f 2)
+    DBNAME=$(echo $1 | cut -d '.' -f 3)
+    TARGET=$1
+    USER=$2
+    CONTAINER=${NETWORK}_${SERVICE}
+    toconf "{"
+    toconf "  \"container_id\": \"$CONTAINER\","
+    toconf "  \"db_user\": \"$USER\","
+    toconf "  \"db_name\": \"$DBNAME\","
+    toconf "  \"target_name\": \"$TARGET\","
+    toconf "  \"pg_dumpall_parameter\": \"--globals-only\","
+    toconf "  \"docker_network\": \"$NETWORK\" "
+    toconf "},"
+}
+
+function mysqlconf(){
+    TARGET=$1
+    NETWORK=$(echo $1 | cut -d '.' -f 1)
+    SERVICE=$(echo $1 | cut -d '.' -f 2)
+    DB=$(echo $1 | cut -d '.' -f 3)
+    CONTAINER=${NETWORK}_${SERVICE}
+    toconf "{"
+    toconf "  \"container_id\": \"$CONTAINER\","
+    toconf "  \"db_name\": \"$DB\","
+    toconf "  \"target_name\": \"$TARGET\","
+    toconf "  \"docker_network\": \"$NETWORK\""
+    toconf "},"
+}
+
+# Basics
+
+toconf "{"
+toconf '  "name": "tägliche Sicherung", '
+toconf ' "id": "",'
+toconf '  "beschreibung": "",'
+toconf '  "cron_interval": "",'
+toconf '  "backup_path": "/home/gisadmin/Sicherungen/taeglich",'
+toconf '  "backup_folder": "date +%Y_%m_%d",'
+toconf '  "delete_after_n_days": "10",'
+toconf '  "delete_diff_on_dow": "5",'
+
+# tar
+
+toconf '  "tar": ['
+tarconf "/home/gisadmin/networks/" "networks.tar" "{/home/gisadmin/networks/*/services/mysql/data/;/home/gisadmin/networks/*/services/pgsql/data}"
+tarconf "/home/gisadmin/kvwmap-server" "kvwmap-server.tar" ""
+rtrim-comma
+toconf '  ],'
+
+#mysql
+toconf '  "mysql_dump": ['
+while read networkpath
+do
+    if [[ -d $networkpath/services/mysql ]]; then
+        network=$(basename $networkpath)
+        mysqlconf "${network}.mysql.kvwmapdb.dump"
+        mysqlconf "${network}.mysql.mysql.dump"
+    fi
+done < <(find /home/gisadmin/networks/ -maxdepth 1 -mindepth 1)
+rtrim-comma
+toconf '  ],'
+
+
+#pgsql
+toconf '  "pg_dump": ['
+while read networkpath
+do
+    if [[ -d $networkpath/services/pgsql ]]; then
+        network=$(basename $networkpath)
+        pgsqlconf "${network}.pgsql.kvwmapsp.dump" "kvwmap"
+    fi
+done < <(find /home/gisadmin/networks/ -maxdepth 1 -mindepth 1)
+rtrim-comma
+toconf '  ],'
+
+#pg_dumpall
+toconf '  "pg_dumpall": ['
+while read networkpath
+do
+    if [[ -d $networkpath/services/pgsql ]]; then
+        network=$(basename $networkpath)
+        pgsqlallconf "${network}.pgsql.kvwmapsp.dump" "kvwmap"
+    fi
+done < <(find /home/gisadmin/networks/ -maxdepth 1 -mindepth 1)
+rtrim-comma
+toconf '  ]'
+toconf "}"
+
+#jq '.' ${CONFIG_FILE} > ${CONFIG_FILE}_tmp
+#mv ${CONFIG_FILE}_tmp ${CONFIG_FILE}
