@@ -57,6 +57,7 @@
 #   #2022_04_11	        1. Kompression -z in rsync ausgeschaltet, führt zu Problemen bei unterschiedlichen rsync Versionen
 #                       2. tar exit-Status 0,1 sind ok
 #                       3. tar exclude direkt übernehmen
+#   #2022_05_03	        1. tar exclude muss mit eval ausgewertet werden, für die globs
 #########################################################
 
 #########################################################
@@ -161,8 +162,7 @@ sichere_dir_als_targz() {
     dbg "dow=$dow"
 
     if [ -n "$tar_exclude" ]; then
-        #tar_exclude=$(eval echo --exclude=$tar_exclude)
-        tar_exclude=" --exclude=$tar_exclude "
+        tar_exclude=$(eval echo --exclude=$tar_exclude)
     fi
 
     #tar.difflog vorhanden und diff.Sicherung konfiguriert?
