@@ -501,9 +501,12 @@ fi #ABORT_BACKUP ?
 ## #9 Symlink setzen                                    #
 #########################################################
 echo "7/7 aktualisiere Sym-Link $BACKUP_PATH/latest auf aktuelles Sicherungsverzeichnis" >> "$LOGFILE"
-rm "$BACKUP_PATH"/latest >> "$LOGFILE"
-ln -s "$BACKUP_DIR" "$BACKUP_PATH"/latest >> "$LOGFILE"
-
+last_dir=$(pwd)
+cd $BACKUP_PATH
+rm ./latest >> "$LOGFILE"
+#ln -s "$BACKUP_DIR" ./latest >> "$LOGFILE"
+ln -s "$BACKUP_FOLDER" ./latest >> "$LOGFILE"
+cd $last_dir
 
 #########################################################
 ## #10 Monitoring-Log schreiben                          #
