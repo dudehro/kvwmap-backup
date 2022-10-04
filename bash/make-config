@@ -91,7 +91,7 @@ toconf '  "delete_diff_on_dow": "5",'
 # tar
 
 toconf '  "tar": ['
-tarconf "/home/gisadmin/networks/" "networks.tar" "{/home/gisadmin/networks/*/services/mysql/data/;/home/gisadmin/networks/*/services/pgsql/data}"
+tarconf "/home/gisadmin/networks/" "networks.tar" '{\"/home/gisadmin/networks/*/services/mysql/data/\",\"/home/gisadmin/networks/*/services/pgsql/data}\"}'
 tarconf "/home/gisadmin/kvwmap-server" "kvwmap-server.tar" ""
 rtrim-comma
 toconf '  ],'
