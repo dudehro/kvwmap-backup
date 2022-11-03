@@ -233,7 +233,7 @@ dump_pg() {
     dbg "docker_network=$docker_network"
 
     docker exec $container_id bash -c "pg_dump -Fc -U $db_user -f /var/lib/postgresql/data/$target_name $database" 2>> "$LOGFILE"
-    pg_dump_data_dir=$(docker inspect $container_id --format "{{json .Mounts}}" | jq -r '.[]|select(.Destination=="/var/lib/postgresql/data").Source')
+    pg_dump_data_dir=$(docker inspect --format "{{json .Mounts}}" $container_id | jq -r '.[]|select(.Destination=="/var/lib/postgresql/data").Source')
 
     if [[ $? -eq 0 ]]; then
         echo "PG-Dump erfolgreich für $database" >> "$LOGFILE"
@@ -268,7 +268,7 @@ dump_mysql() {
 #        mysql_data_dir=/home/gisadmin/networks/"$docker_network"/services/mysql/data
     fi
 
-    mysql_data_dir=$(docker inspect $container_id --format "{{json .Mounts}}" | jq -r '.[]|select(.Destination=="/var/lib/mysql").Source')
+    mysql_data_dir=$(docker inspect --format "{{json .Mounts}}" $container_id | jq -r '.[]|select(.Destination=="/var/lib/mysql").Source')
 
     if [ -f "$APPS_DIR"/"$PROD_APP"/credentials.php ]; then
 
@@ -333,7 +333,7 @@ pg_dumpall_wrapper(){
     dbg "target_name=$target_name"
     dbg "pg_dumpall_parameter=$pg_dumpall_parameter"
 
-    pg_dump_data_dir=$(docker inspect $container_id --format "{{json .Mounts}}" | jq -r '.[]|select(.Destination=="/var/lib/postgresql/data").Source')
+    pg_dump_data_dir=$(docker inspect --format "{{json .Mounts}}" $container_id | jq -r '.[]|select(.Destination=="/var/lib/postgresql/data").Source')
     docker exec $container_id bash -c "pg_dumpall -U $db_user -l $db_name ${pg_dumpall_parameter} -f /var/lib/postgresql/data/$target_name"
     if [[ $? -eq 0 ]]; then
         echo "pg_dumpall erfolgreich" >> "$LOGFILE"
