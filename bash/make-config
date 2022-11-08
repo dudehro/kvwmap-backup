@@ -128,7 +128,7 @@ while read networkpath
 do
     if [[ -d $networkpath/services/pgsql ]]; then
         network=$(basename $networkpath)
-        pgsqlallconf "${network}.pgsql.kvwmapsp.dump" "kvwmap"
+        pgsqlallconf "${network}.pgsql.rollen.dump" "kvwmap"
     fi
 done < <(find /home/gisadmin/networks/ -maxdepth 1 -mindepth 1)
 rtrim-comma
