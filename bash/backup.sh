@@ -58,6 +58,7 @@
 #                       2. tar exit-Status 0,1 sind ok
 #                       3. tar exclude direkt übernehmen
 #   #2022_05_03	        1. tar exclude muss mit eval ausgewertet werden, für die globs
+#   #2022_11_21         1. $VOLLSICHERUNG wird verwendet und geschrieben
 #########################################################
 
 #########################################################
@@ -80,8 +81,8 @@ step_pgsql_error=FALSE
 step_rsync_error=FALSE
 step_pgdumpall_error=FALSE
 
-# TARLOG geloescht?
-DELETED_TARLOG=FALSE
+# Vollsicherung?
+VOLLSICHERUNG=TRUE
 
 # DEBUG-Messages to stdout
 debug=TRUE
@@ -135,6 +136,7 @@ delete_diff_tarlog(){
 
         TAR_COUNT=$(cat $CONFIG_FILE | jq '.tar | length')
         if (( $TAR_COUNT > 0 )); then
+	    VOLLSICHERUNG=FALSE
             for (( i=0; i < $TAR_COUNT; i++ )); do
                 local TARDIR=$(cat $CONFIG_FILE | jq -r ".tar[$i].source")
                 rm ${TARDIR}/.tar.difflog
@@ -528,7 +530,7 @@ cat << EOF
 "PGDUMPALL_ERROR":"$step_pgsql_error",
 "RSYNC_ERROR":"$step_rsync_error",
 "SIZE_OF_BACKUP":"$size_of_backup",
-"TAR_FULLBACKUP":"$DELETED_TARLOG"
+"TAR_FULLBACKUP":"$VOLLSICHERUNG"
 EOF
 )                > "$JSON_LOG"
 #cat "$LOGFILE"  >> "$JSON_LOG"
