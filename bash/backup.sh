@@ -59,6 +59,7 @@
 #                       3. tar exclude direkt übernehmen
 #   #2022_05_03	        1. tar exclude muss mit eval ausgewertet werden, für die globs
 #   #2022_11_21         1. $VOLLSICHERUNG wird verwendet und geschrieben
+#   #2022_11_29         1. $VOLLSICHERUNG wurde falsch gesetzt, Logik muss invertiert sein
 #########################################################
 
 #########################################################
@@ -82,7 +83,7 @@ step_rsync_error=FALSE
 step_pgdumpall_error=FALSE
 
 # Vollsicherung?
-VOLLSICHERUNG=TRUE
+VOLLSICHERUNG=FALSE
 
 # DEBUG-Messages to stdout
 debug=TRUE
@@ -136,7 +137,7 @@ delete_diff_tarlog(){
 
         TAR_COUNT=$(cat $CONFIG_FILE | jq '.tar | length')
         if (( $TAR_COUNT > 0 )); then
-	    VOLLSICHERUNG=FALSE
+	    VOLLSICHERUNG=TRUE
             for (( i=0; i < $TAR_COUNT; i++ )); do
                 local TARDIR=$(cat $CONFIG_FILE | jq -r ".tar[$i].source")
                 rm ${TARDIR}/.tar.difflog
