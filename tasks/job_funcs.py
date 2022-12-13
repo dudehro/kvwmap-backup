@@ -10,16 +10,6 @@ def writeLog(defFile, jobName, starttime=0, endtime=0, exitcode=-1, stdout="", s
         with open(logFile, 'r') as fh:
             jsonLog = json.load(fh)
     else:
-               # {
-               #     "name": ""
-               #     ,"parameterlist" : []
-               #     ,"starttime": 0
-               #     ,"endtime"  : 0
-               #     ,"exitcode" : -1
-               #     ,"stdout"   : ""
-               #     ,"stderr"   : ""
-               # }
-
         jsonStr = '{ "datum" : "", "jobs" : [] }'
         jsonLog = json.loads(jsonStr)
 
@@ -29,7 +19,6 @@ def writeLog(defFile, jobName, starttime=0, endtime=0, exitcode=-1, stdout="", s
             jobPos = i
             break
     if jobPos == -1:
-        print("job hinzufuegen")
         jsonLog['jobs'].append({"name":jobName})
 
     if starttime != 0:
@@ -60,12 +49,16 @@ def get_Definition(defFile):
 def get_jobDefinition(defFile, jobname):
     for job in get_Definition(defFile)['jobs']:
         if job['name'] == jobname:
+            li2 = list()
+            for l in job['command']:
+                li2.append(replaceVars(l))
+            job['command'] = li2
             return job
     raise Exception('Job nicht gefunden.')
 
 def get_Backupdir(defFile):
     path = get_Definition(defFile)['dir']
-    path = path.replace("$today$", datetime.now().strftime('%Y-%m-%d'))
+    path = replaceVars(path)
     return path
 
 def get_configFileAbsPath(configFile):
@@ -76,8 +69,12 @@ def get_configFileAbsPath(configFile):
 
 def mkDirs(path):
     try:
-        if not os.path.exist(path):
+        if not os.path.exists(path):
             os.makedirs(path, mode=0o740)
         return 0
     except:
         return 1
+
+def replaceVars(str):
+    str = str.replace("$today$", datetime.now().strftime('%Y-%m-%d'))
+    return str

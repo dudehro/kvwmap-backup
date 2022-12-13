@@ -6,8 +6,7 @@
             "name":""
             ,"command":["./rsync", "param1"]
             ,"start-job-on-success":""
-            ,"start-job-on-failure":""
-            ,"start-job-on-finish":""
+            ,"start-job-on-error":""
         }
     ]
 }
