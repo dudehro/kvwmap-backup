@@ -1,12 +1,38 @@
 {
-    "name":""
-    ,"dir" : "/dir/$today$"
+    "dir" : "/mnt/backup/$today$"
     ,"jobs": [
         {
-            "name":""
-            ,"command":["./rsync", "param1"]
-            ,"start-job-on-success":""
-            ,"start-job-on-error":""
+            "name":"echo1"
+            ,"command":["echo", "\"This is the first job, triggering date\""]
+            ,"start-job-on-success":"echo-success"
+            ,"start-job-on-error":"echo-error"
+            ,"next-job":"date"
+        },
+        {
+            "name":"date"
+            ,"command":["date", "%s"]
+            ,"start-job-on-success":"echo-success"
+            ,"start-job-on-error":"echo-error"
+            ,"next-job":"echo3"
+        },
+        {
+            "name":"echo3"
+            ,"command":["echo", "\"this is the third job after date, which failed because of a missing +%s\""]
+            ,"start-job-on-success":"echo-success"
+            ,"start-job-on-error":"echo-error"
+            ,"next-job":"at"
+        },
+        {
+            "name":"at"
+            ,"command":["at", "now +2 weeks same job"]
+        },
+        {
+            "name":"echo-success"
+            ,"command":["echo", "\"some ok action\""]
+        },
+        {
+            "name":"echo-error"
+            ,"command":["echo", "\"attention: only the last execution of a job is logged\""]
         }
     ]
 }

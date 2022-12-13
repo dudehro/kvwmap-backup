@@ -5,7 +5,7 @@ from datetime import date
 from inspect import getsourcefile
 
 def writeLog(defFile, jobName, starttime=0, endtime=0, exitcode=-1, stdout="", stderr="", args=""):
-    logFile = os.path.join(get_Backupdir(defFile), 'tasklog.json')
+    logFile = os.path.join(get_Backupdir(defFile), 'joblog.json')
     if os.path.isfile(logFile):
         with open(logFile, 'r') as fh:
             jsonLog = json.load(fh)
