@@ -1,0 +1,13 @@
+{
+    "name":""
+    ,"workdir" : "/dir/$today$"
+    ,"jobs": [
+        {
+            "name":""
+            ,"command":["./rsync", "param1"]
+            ,"start-job-on-success":""
+            ,"start-job-on-error":""
+            ,"next-job":""
+        }
+    ]
+}

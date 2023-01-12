@@ -1,0 +1,8 @@
+- /home/gisadmin/networks/kvwmap_prod/services/mariadb/data/
+- /home/gisadmin/networks/kvwmap_prod/services/pgsql/data
++ /home/***
++ /mnt/
++ /mnt/hddraid1/
+- /mnt/hddraid1/www/tmp/
++ /mnt/hddraid1/www/***
+- /***
