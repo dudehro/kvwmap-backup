@@ -10,9 +10,10 @@ if [ -z $CONTAINER ] || [ "$BACKUPTYP" != "full" -a "$BACKUPTYP" != "diff" -a "$
 	exit 1
 fi
 
-docker exec -it ${CONTAINER} pgbackrest --stanza=local --log-level-console=info --type=${BACKUPTYP} backup
+docker exec ${CONTAINER} pgbackrest --stanza=local --log-level-console=info --type=${BACKUPTYP} backup
 if [ $? -ne 0 ]; then
     EXITCODE=2
 fi
 
+DUMPDIR=$(docker inspect --format "{{json .Mounts}}" ${CONTAINER} | jq -r '.[]|select(.Destination=="/pgbackrest").Source')
 exit ${EXITCODE}
