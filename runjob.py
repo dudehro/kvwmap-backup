@@ -33,6 +33,12 @@ def startJob(defFile, runJob, workdir):
             log2Stdout(f"job failed with error: {output.stderr}")
             if 'start-job-on-error' in job.keys():
                 jobQ.append( job_funcs.get_jobDefinition(defFile, job['start-job-on-error']) )
+        except Exception as e:
+            failedJobs+=1
+            job_funcs.writeLog(workdir, job['name'], endtime=datetime.now().strftime("%s"), exitcode=999, stderr=str(e))
+            log2Stdout(f"job failed with error: str{e}")
+            if 'start-job-on-error' in job.keys():
+                jobQ.append( job_funcs.get_jobDefinition(defFile, job['start-job-on-error']) )
     return failedJobs
 
 defFile = job_funcs.get_configFileAbsPath(sys.argv[1])
@@ -51,5 +57,3 @@ try:
 except Exception as e:
     print(f"Abbruch mit Fehler: {str(e)}")
     sys.exit(1)
-
-
