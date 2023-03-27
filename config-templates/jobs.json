@@ -1,13 +1,49 @@
 {
-    "name":""
-    ,"workdir" : "/dir/$today$"
+    "workdir" : "/home/gisadmin/Sicherungen/Snapshots/$today$"
     ,"jobs": [
         {
-            "name":""
-            ,"command":["./rsync", "param1"]
-            ,"start-job-on-success":""
-            ,"start-job-on-error":""
-            ,"next-job":""
+            "name":"rsync-inkr"
+            ,"command":["rsync.sh", "incr"]
+            ,"next-job":"postgresql-incr"
+        },
+        {
+            "name":"postgresql-incr"
+            ,"command":["pgbackrest.sh", "kvwmap_prod_pgsql", "incr"]
+            ,"next-job":"mariadb"
+        },
+        {
+            "name":"rsync-full"
+            ,"command":["rsync.sh"]
+            ,"next-job":"postgresql-full"
+        },
+        {
+            "name":"postgresql-full"
+            ,"command":["pgbackrest.sh", "kvwmap_prod_pgsql", "full"]
+            ,"next-job":"mariadb"
+        },
+        {
+            "name":"postgresql"
+            ,"command":["dump-postgresql.sh", "/root/.config/backup/pgdump.kvwmap_prod.conf"]
+            ,"next-job":"mariadb"
+        },
+        {
+            "name":"mariadb"
+            ,"command":["dump-mariadb.sh", "/root/.config/backup/mariadb.kvwmap_prod.conf"]
+            ,"next-job":"cp-config"
+        },
+        {
+            "name":"cp-config"
+            ,"command":["cp-config.sh", "/root/.config/backup"]
+            ,"next-job":"overlay"
+        },
+        {
+            "name":"overlay"
+            ,"command":["overlayfs.sh", "/home/gisadmin/Sicherungen/Snapshots", "/home/gisadmin/Sicherungen/Historie"]
+            ,"next-job":"rm-old"
+        },
+        {
+            "name":"rm-old"
+            ,"command":["find", "/home/gisadmin/Sicherungen/Snapshots/", "-mindepth", "1", "-maxdepth", "1", "-mtime", "+42"]
         }
     ]
 }

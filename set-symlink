@@ -1,2 +1,3 @@
 #!/bin/bash
-ln -s ./*.{sh,py} /usr/local/bin/
+
+ln -s $(pwd)/*.{sh,py} /usr/local/bin/
