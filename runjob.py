@@ -33,6 +33,9 @@ def startJob(defFile, runJob, workdir):
             log2Stdout(f"job failed with error: {output.stderr}")
             if 'start-job-on-error' in job.keys():
                 jobQ.append( job_funcs.get_jobDefinition(defFile, job['start-job-on-error']) )
+            if 'exit-queue-on-error' in job.keys():
+                jobQ = list()
+
     return failedJobs
 
 defFile = job_funcs.get_configFileAbsPath(sys.argv[1])

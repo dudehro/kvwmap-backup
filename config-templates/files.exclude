@@ -1,0 +1,10 @@
+R /home
+- **/services/pgsql*/data/
+- **/services/pgsql*/backup/
+- **/services/pg15migration/data/
+- **/services/{mariadb,mysql}/data/
++ home/networks/**
+R /etc/backup
++ **
+R /var/log
++ **

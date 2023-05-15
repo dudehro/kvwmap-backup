@@ -1,3 +1,7 @@
 #!/bin/bash
 
 ln -s $(pwd)/*.{sh,py} /usr/local/bin/
+ln -s $(pwd)/monitor/*.sh /usr/local/bin/
+ln -s $(pwd)/mariadb/*.sh /usr/local/bin/
+ln -s $(pwd)/postgresql/*.sh /usr/local/bin/
+ln -s $(pwd)/borg/*.sh /usr/local/bin/

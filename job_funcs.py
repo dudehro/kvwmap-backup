@@ -84,5 +84,3 @@ def mkDirs(path):
 def replaceVars(str):
     str = str.replace("$today$", datetime.now().strftime('%Y-%m-%d'))
     return str
-
-
