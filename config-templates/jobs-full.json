@@ -24,7 +24,6 @@
         {
             "name":"mariadb"
             ,"command":["dump-mariadb.sh", "/root/.config/backup/mariadb.kvwmap_prod.conf"]
-            ,"next-job":"cp-config"
         }
     ]
 }
