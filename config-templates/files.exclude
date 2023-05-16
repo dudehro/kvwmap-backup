@@ -3,6 +3,7 @@ R /home
 - **/services/pgsql*/backup/
 - **/services/pg15migration/data/
 - **/services/{mariadb,mysql}/data/
+- **/gisadmin/Sicherungen/
 + home/networks/**
 R /etc/backup
 + **
