@@ -23,7 +23,7 @@
         },
         {
             "name":"mariadb"
-            ,"command":["dump-mariadb.sh", "/root/.config/backup/mariadb.kvwmap_prod.conf"]
+            ,"command":["dump-mariadb.sh", "/etc/backup/mariadb.kvwmap_prod.conf"]
         }
     ]
 }

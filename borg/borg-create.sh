@@ -11,7 +11,8 @@ if [ ! -f "$Config" ]; then
 fi
 
 source "$Config"
-borgcmd="borg create --list --one-file-system -v --stats --progress --exclude-caches "
+#borgcmd="borg create --list --one-file-system -v --stats --progress --exclude-caches "
+borgcmd="borg create --one-file-system --stats --exclude-caches "
 
 if [ -n "$patternsfrom" ]; then
     borgcmd="$borgcmd --patterns-from=$patternsfrom "
