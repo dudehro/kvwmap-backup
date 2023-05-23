@@ -1,0 +1,38 @@
+{
+    "workdir":"/home/gisadmin/Sicherungen/Snapshots/$today$",
+    "jobs": [
+        {
+            "name":"postgresql-full"
+            ,"command":["pgbackrest.sh", "kvwmap_prod_pgsql", "full"]
+            ,"next-job":"borg"
+        },
+        {
+            "name":"postgresql-incr"
+            ,"command":["pgbackrest.sh", "kvwmap_prod_pgsql", "incr"]
+            ,"next-job":"borg"
+        },
+        {
+            "name":"postgresql-dump"
+            ,"command":["dump-postgresql.sh", "/root/.config/backup/pgdump.kvwmap_prod.conf"]
+            ,"next-job":"borg"
+        },
+        {
+            "name":"borg"
+            ,"command":["borg-create.sh"]
+            ,"next-job":"borg-prune"
+        },
+        {
+            "name":"borg-prune"
+            ,"command":["borg-prune.sh"]
+            ,"next-job":"mariadb"
+        },
+        {
+            "name":"mariadb"
+            ,"command":["dump-mariadb.sh", "/etc/backup/mariadb.kvwmap_prod.conf"]
+        }
+        {
+            "name":"mysql"
+            ,"command":["dump-mysql.sh", "/etc/backup/mysql.kvwmap_prod.conf"]
+        }
+    ]
+}
