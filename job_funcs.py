@@ -76,7 +76,7 @@ def get_configFileAbsPath(configFile):
 def mkDirs(path):
     try:
         if not os.path.exists(path):
-            os.makedirs(path, mode=0o740)
+            os.makedirs(path, mode=0o755)
         return 0
     except:
         return 1
