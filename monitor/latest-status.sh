@@ -30,6 +30,12 @@ else
     exit 3
 fi
 
+#Datei lesbar?
+if ! jq . $lastWorkdir/joblog.json >/dev/null 2>&1; then
+    echo "1"
+    exit 1
+fi
+
 i_max=$(jq '.jobs|length' $lastWorkdir/joblog.json)
 i=0
 while [ $i -lt $i_max ]
