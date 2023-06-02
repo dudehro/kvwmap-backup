@@ -8,7 +8,7 @@
 
 Config=/etc/backup/jobs.json
 if [ -n "${1}" ]; then
-    Config=${2}
+    Config=${1}
 fi
 if [ ! -f "$Config" ]; then
     echo "Konfiguration $Config existiert nicht. Bitte Pfad zur Konfiguration übergeben."
