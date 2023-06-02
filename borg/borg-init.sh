@@ -18,3 +18,4 @@ if [ -z "$repopath" ]; then
 fi
 
 borg init --encryption=none "$repopath"
+borg config "$repopath" additional_free_space 10G
