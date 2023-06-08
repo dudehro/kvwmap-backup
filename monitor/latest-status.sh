@@ -43,7 +43,7 @@ do
     exitcode=$(jq .jobs[$i].exitcode $lastWorkdir/joblog.json)
     jobname=$(jq -r .jobs[$i].name $lastWorkdir/joblog.json)
     if [ "$exitcode" -gt 0 ]; then
-        if [ "$jobname" = "borg" ]; then
+        if [[ $jobname =~ ^borg ]]; then
             if [ "$exitcode" -eq 1 ]; then
                 echo 2
                 exit 2
