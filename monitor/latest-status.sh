@@ -6,9 +6,15 @@
 # 2 Warnungen
 # 3 Fehler
 
+function set_exitcode() {
+    if [ $1 -gt $max_exitcode ]; then
+        max_exitcode=$1
+    fi
+}
+
 Config=/etc/backup/jobs.json
 if [ -n "${1}" ]; then
-    Config=${1}
+    Config=${2}
 fi
 if [ ! -f "$Config" ]; then
     echo "Konfiguration $Config existiert nicht. Bitte Pfad zur Konfiguration übergeben."
@@ -30,34 +36,27 @@ else
     exit 3
 fi
 
-#Datei lesbar?
-if ! jq . $lastWorkdir/joblog.json >/dev/null 2>&1; then
-    echo "1"
-    exit 1
-fi
-
 i_max=$(jq '.jobs|length' $lastWorkdir/joblog.json)
 i=0
+max_exitcode=0
 while [ $i -lt $i_max ]
 do
     exitcode=$(jq .jobs[$i].exitcode $lastWorkdir/joblog.json)
     jobname=$(jq -r .jobs[$i].name $lastWorkdir/joblog.json)
     if [ "$exitcode" -gt 0 ]; then
-        if [[ $jobname =~ ^borg ]]; then
+        if [ "$jobname" = "borg" ]; then
             if [ "$exitcode" -eq 1 ]; then
-                echo 2
-                exit 2
+                set_exitcode 2
             else
-                echo 3
-                exit 3
+                set_exitcode 3
             fi
         else
-            echo 3
-            exit 3
+            set_exitcode 3
         fi
     fi
 
     ((i=i+1))
 done
-echo 0
-exit 0
+echo $max_exitcode
+exit $max_exitcode
+
