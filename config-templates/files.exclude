@@ -1,11 +1,10 @@
 R /home
 - **/services/pgsql*/data/
-- **/services/pgsql*/backup/
 - **/services/pg15migration/data/
 - **/services/{mariadb,mysql}/data/
-- **/gisadmin/Sicherungen/
-+ home/networks/**
+- **/gisadmin/Sicherungen/borgrepo
 R /etc/backup
 + **
 R /var/log
 + **
+
