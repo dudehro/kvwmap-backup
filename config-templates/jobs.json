@@ -1,19 +1,19 @@
 {
-    "workdir":"/home/gisadmin/Sicherungen/Snapshots/$today$",
-    "jobs": [
+    "workdir" : "/home/gisadmin/Sicherungen/taeglich/$today$"
+    ,"jobs": [
         {
             "name":"postgresql-full"
             ,"command":["pgbackrest.sh", "kvwmap_prod_pgsql", "full"]
-            ,"next-job":"borg"
+            ,"next-job":"mariadb"
         },
         {
             "name":"postgresql-incr"
             ,"command":["pgbackrest.sh", "kvwmap_prod_pgsql", "incr"]
-            ,"next-job":"borg"
+            ,"next-job":"mariadb"
         },
         {
-            "name":"postgresql-dump"
-            ,"command":["dump-postgresql.sh", "/root/.config/backup/pgdump.kvwmap_prod.conf"]
+            "name":"mariadb"
+            ,"command":["dump-mariadb.sh", "/etc/backup/mariadb.kvwmap_prod.conf"]
             ,"next-job":"borg"
         },
         {
@@ -24,15 +24,17 @@
         {
             "name":"borg-prune"
             ,"command":["borg-prune.sh"]
-            ,"next-job":"mariadb"
+            ,"next-job":"borg-remote"
         },
         {
-            "name":"mariadb"
-            ,"command":["dump-mariadb.sh", "/etc/backup/mariadb.kvwmap_prod.conf"]
-        }
+            "name":"borg-remote"
+            ,"command":["borg-create.sh", "/etc/backup/borg-remote.conf"]
+            ,"next-job":"rm-alte"
+        },
         {
-            "name":"mysql"
-            ,"command":["dump-mysql.sh", "/etc/backup/mysql.kvwmap_prod.conf"]
-        }
+            "name":"rm-alte"
+            ,"command":["rm-alte-tagessicherung.sh"]
+        },
     ]
 }
+
