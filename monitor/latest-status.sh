@@ -6,6 +6,7 @@
 # 2 Warnungen
 # 3 Fehler
 
+max_exitcode=0
 function set_exitcode() {
     if [ $1 -gt $max_exitcode ]; then
         max_exitcode=$1
@@ -14,12 +15,18 @@ function set_exitcode() {
 
 Config=/etc/backup/jobs.json
 if [ -n "${1}" ]; then
-    Config=${2}
+    Config=${1}
 fi
 if [ ! -f "$Config" ]; then
     echo "Konfiguration $Config existiert nicht. Bitte Pfad zur Konfiguration übergeben."
     exit 1
 fi
+
+#Datei lesbar?
+if ! jq . $Config >/dev/null 2>&1; then
+    set_exitcode 3
+fi
+
 workdir=$(dirname $(cat "$Config" | jq -r .workdir))
 date_today=$(date +%F)
 date_minus1day=$(date  --date="yesterday" +%F)
@@ -36,9 +43,13 @@ else
     exit 3
 fi
 
+#Datei lesbar?
+if ! jq . $lastWorkdir/joblog.json >/dev/null 2>&1; then
+    set_exitcode 3
+fi
+
 i_max=$(jq '.jobs|length' $lastWorkdir/joblog.json)
 i=0
-max_exitcode=0
 while [ $i -lt $i_max ]
 do
     exitcode=$(jq .jobs[$i].exitcode $lastWorkdir/joblog.json)
