@@ -23,7 +23,8 @@ def startJob(defFile, runJob, workdir):
             job_funcs.writeLog(workdir, job['name'], starttime=datetime.now().strftime("%s") )
             if 'next-job' in job.keys():
                 jobQ.append( job_funcs.get_jobDefinition(defFile, job['next-job']) )
-            output = subprocess.run(job['command'], env={'WORKDIR': workdir, 'PATH':os.environ['PATH'], 'HOME':os.environ['HOME']}, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+            env=os.environ.update({'WORKDIR': workdir})
+            output = subprocess.run(job['command'], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
             job_funcs.writeLog(workdir, job['name'], endtime=datetime.now().strftime("%s"), exitcode=output.returncode, stdout=output.stdout, stderr=output.stderr, args=output.args)
             if 'start-job-on-success' in job.keys():
                 jobQ.append( job_funcs.get_jobDefinition(defFile, job['start-job-on-success']) )
