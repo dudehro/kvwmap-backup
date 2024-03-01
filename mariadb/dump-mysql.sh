@@ -12,7 +12,7 @@ EXITCODE=0
 for DB in "${DATABASES[@]}"
 do
     FILENAME=${CONTAINER}.${DB}.dump
-    docker exec "${CONTAINER}" bash -c "mysqldump -h localhost --single-transaction --user=$MYSQLUSER --databases ${DB} --password=\"$MYSQLPW\" > /var/lib/mysql/${FILENAME}"
+    docker exec "${CONTAINER}" bash -c "mysqldump -h mysql --single-transaction --user=$MYSQLUSER --databases ${DB} --password=\"$MYSQLPW\" > /var/lib/mysql/${FILENAME}"
     if [ $? -ne 0 ]; then
         EXITCODE=1
     fi
