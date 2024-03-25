@@ -11,8 +11,6 @@ current_date = datetime.now().strftime('%Y-%m-%d')
 
 # Funktion zum Extrahieren des Dateinamens ohne Erweiterung
 def get_file_name_without_extension(file_path):
-#    return file_path.split('.')[0]
-#    file_name = os.path.basename(file_path)
     normalized_name = file_path.replace('/', '_').replace('.','_')
     filename = os.path.splitext(normalized_name)[0]
     return filename
@@ -63,7 +61,7 @@ def ausfuehren_befehle_aus_datei(datei):
                     result = subprocess.run(befehl, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                     logger.info("exec", extra={'cmd': befehl, 'stdout': result.stdout.strip(), 'stderr': result.stderr.strip(), 'exitcode': result.returncode})
                 except subprocess.CalledProcessError as e:
-                    logger.error("exec", extra={'cmd': befehl, 'stdout': result.stdout.strip(), 'stderr': result.stderr.strip(), 'exitcode': e.returncode})
+                    logger.error("exec", extra={'cmd': befehl, 'stdout': e.stdout.strip(), 'stderr': e.stderr.strip(), 'exitcode': e.returncode})
     except FileNotFoundError:
         logger.error("FileNotFoundError")
     except Exception as e:
