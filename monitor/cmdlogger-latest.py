@@ -32,12 +32,21 @@ def get_latest_logfile(befehlsdatei):
 
 def find_exec_errors(logfile):
     exec_errors = []
+    exec_warnings = []
+
     with open(logfile, 'r') as f:
         for line in f:
             log_entry = json.loads(line.strip())
-            if log_entry['message'] == 'exec' and log_entry['exitcode'] != 0:
-                exec_errors.append(log_entry)
-    return exec_errors
+            if log_entry['message'] == 'exec':
+                if log_entry['cmd'].startswith('borg'):
+                    if log_entry['exitcode'] == 1:
+                        exec_warnings.append(log_entry)
+                    elif log_entry['exitcode'] == 2:
+                        exec_errors.append(log_entry)
+                elif log_entry['exitcode'] > 0:
+                    print(log_entry['cmd'])
+                    exec_errors.append(log_entry)
+    return exec_errors, exec_warnings
 
 if __name__ == "__main__":
     befehlsdatei = sys.argv[1]  # Annahme: Die Befehlsdatei wird als Argument übergeben
@@ -51,8 +60,11 @@ if __name__ == "__main__":
             print('Logfile älter als 3 Tage')
             sys.exit()
         #Fehler aus Logdatei auswerden
-        exec_errors = find_exec_errors(latest_logfile)
-        if exec_errors:
+        exec_errors, exec_warnings = find_exec_errors(latest_logfile)
+        if exec_warnings:
+            print('Warnungen in Logdatei')
+            sys.exit(2)
+        elif exec_errors:
             print('Fehler in Logdatei')
             sys.exit(3)
         else:
