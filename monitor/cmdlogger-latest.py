@@ -44,7 +44,6 @@ def find_exec_errors(logfile):
                     elif log_entry['exitcode'] == 2:
                         exec_errors.append(log_entry)
                 elif log_entry['exitcode'] > 0:
-                    print(log_entry['cmd'])
                     exec_errors.append(log_entry)
     return exec_errors, exec_warnings
 
@@ -57,19 +56,19 @@ if __name__ == "__main__":
         # Überprüfe, ob die Datei älter als 3 Tage ist
         file_creation_time = datetime.fromtimestamp(os.path.getctime(latest_logfile))
         if datetime.now() - file_creation_time > timedelta(days=3):
-            print('Logfile älter als 3 Tage')
-            sys.exit()
+            print('Feher: Logfile älter als 3 Tage')
+            sys.exit(3)
         #Fehler aus Logdatei auswerden
         exec_errors, exec_warnings = find_exec_errors(latest_logfile)
-        if exec_warnings:
-            print('Warnungen in Logdatei')
-            sys.exit(2)
-        elif exec_errors:
+        if exec_errors:
             print('Fehler in Logdatei')
             sys.exit(3)
+        elif exec_warnings:
+            print('Warnungen in Logdatei')
+            sys.exit(2)
         else:
             print('keine Fehler')
             sys.exit(0)
     else:
-        print('kein Logfile gefunden')
-        sys.exit(2)
+        print('Fehler: kein Logfile gefunden')
+        sys.exit(3)
