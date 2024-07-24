@@ -56,12 +56,12 @@ def ausfuehren_befehle_aus_datei(datei):
         with open(datei, 'r') as f:
             for line in f:
                 befehl = line.strip()  # Entferne Leerzeichen und Zeilenumbrüche
-                #print(befehl)
-                try:
-                    result = subprocess.run(befehl, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                    logger.info("exec", extra={'cmd': befehl, 'stdout': result.stdout.strip(), 'stderr': result.stderr.strip(), 'exitcode': result.returncode})
-                except subprocess.CalledProcessError as e:
-                    logger.error("exec", extra={'cmd': befehl, 'stdout': e.stdout.strip(), 'stderr': e.stderr.strip(), 'exitcode': e.returncode})
+                if not befehl.startswith('#'):
+                    try:
+                        result = subprocess.run(befehl, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                        logger.info("exec", extra={'cmd': befehl, 'stdout': result.stdout.strip(), 'stderr': result.stderr.strip(), 'exitcode': result.returncode})
+                    except subprocess.CalledProcessError as e:
+                        logger.error("exec", extra={'cmd': befehl, 'stdout': e.stdout.strip(), 'stderr': e.stderr.strip(), 'exitcode': e.returncode})
     except FileNotFoundError:
         logger.error("FileNotFoundError")
     except Exception as e:
