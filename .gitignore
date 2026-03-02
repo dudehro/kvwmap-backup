@@ -1,4 +1,6 @@
 backup-config/
+custom-scripts/*
+!custom-scripts/README.md
 # Binaries for programs and plugins
 *.exe
 *.exe~
