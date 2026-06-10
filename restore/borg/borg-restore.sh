@@ -11,15 +11,20 @@
 #   ./borg-restore.sh extract           # letztes Archiv komplett nach $TARGET
 #   ./borg-restore.sh extract etc/ var/lib/postgresql/
 #                                       # nur bestimmte Pfade (ohne führenden /)
-# separaten SSH-Key erstellen
-# ssh-keygen -t ed25519 -f /root/.ssh/borg_restore -N ""
+# Setup:
+# 1. separaten SSH-Key erstellen: ssh-keygen -t ed25519 -f /root/.ssh/borg_restore -N ""
+# 2. erstellten public-key auf REPO_HOST einrichten
+# 3. Script-Konfiguration anpassen: REPO_PORT, REPO_PATH
+# 4. wenn Repo verschlüssel ist, PASSFILE anlegen und im Script eintragen
+#
+
 set -euo pipefail
 
 # ── Konfiguration ────────────────────────────────────────────────
 REPO_HOST="storage.gdi-service.de"
-REPO_PORT=""
+REPO_PORT="22"
 REPO_USER="borgbackup"
-REPO_PATH="/storage/borgrepos/"
+REPO_PATH="/storage/borgrepos/<hostname>"
 REPO="ssh://${REPO_USER}@${REPO_HOST}:${REPO_PORT}${REPO_PATH}"
 
 TARGET="/restore"                          # Staging-Verzeichnis, NICHT /
