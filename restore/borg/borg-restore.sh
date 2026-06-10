@@ -38,16 +38,19 @@ export BORG_RSH="ssh -i ${SSH_KEY} -o BatchMode=yes -o ConnectTimeout=10"
 export BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes
 export BORG_RELOCATED_REPO_ACCESS_IS_OK=yes
 
+# ── Logging mit Zeitstempel ──────────────────────────────────────
+log() { echo "[$(date +%Y-%m-%d\ %H:%M:%S)] $*"; }
+
 MODE="${1:-}"; shift || true
 
 # ── Preflight ────────────────────────────────────────────────────
-command -v borg >/dev/null || { echo "FEHLER: borg nicht installiert (apt install borgbackup)"; exit 1; }
+command -v borg >/dev/null || { log "FEHLER: borg nicht installiert (apt install borgbackup)"; exit 1; }
 
 # ── Letztes Archiv ermitteln (dient zugleich als Erreichbarkeits- und Passphrase-Check, ohne teures borg info) ──
 LATEST="$(borg list --last 1 --format '{archive}' "$REPO")" \
-  || { echo "FEHLER: Repo nicht erreichbar oder Passphrase falsch"; exit 1; }
-[[ -n "$LATEST" ]] || { echo "FEHLER: kein Archiv im Repo gefunden"; exit 1; }
-echo "==> Letztes Archiv: ${LATEST}"
+  || { log "FEHLER: Repo nicht erreichbar oder Passphrase falsch"; exit 1; }
+[[ -n "$LATEST" ]] || { log "FEHLER: kein Archiv im Repo gefunden"; exit 1; }
+log "==> Letztes Archiv: ${LATEST}"
 
 
 case "$MODE" in
@@ -59,22 +62,25 @@ case "$MODE" in
     ;;
   dry-run)
     mkdir -p "$TARGET"; cd "$TARGET"
+    log "==> Simuliere Extraktion (dry-run)"
     borg extract --dry-run --list "${REPO}::${LATEST}" "$@"
     ;;
   extract)
     mkdir -p "$TARGET"
     # Sicherung gegen versehentliches Extrahieren nach /
-    [[ "$(realpath "$TARGET")" == "/" ]] && { echo "FEHLER: TARGET ist / — nutz das Staging-Verzeichnis."; exit 1; }
+    [[ "$(realpath "$TARGET")" == "/" ]] && { log "FEHLER: TARGET ist / — nutz das Staging-Verzeichnis."; exit 1; }
     cd "$TARGET"
-    echo "==> Extrahiere nach ${TARGET} (Log: ${LOGFILE})"
+    log "==> Extrahiere nach ${TARGET} (Log: ${LOGFILE})"
     # --numeric-ids: UIDs/GIDs numerisch erhalten, kein Name-Mapping
     #   (borg < 1.2: stattdessen --numeric-owner)
     borg extract --numeric-ids --list --progress \
       "${REPO}::${LATEST}" "$@" 2>&1 | tee "$LOGFILE"
-    echo "==> Fertig. Inhalt liegt unter ${TARGET}/ (Pfade ohne führenden /)."
+    log "==> Inhalt liegt unter ${TARGET}/ (Pfade ohne führenden /)."
     ;;
   *)
     echo "Usage: $0 {list|contents|dry-run|extract} [pfad ...]"
     exit 1
     ;;
 esac
+
+log "==> Script fertig (Modus: ${MODE})."
