@@ -39,7 +39,15 @@ export BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes
 export BORG_RELOCATED_REPO_ACCESS_IS_OK=yes
 
 # ── Logging mit Zeitstempel ──────────────────────────────────────
+# Gesamte Ausgabe (stdout + stderr) zusätzlich ins LOGFILE spiegeln.
+# So landet alles im Log — log()-Meldungen, borg-Ausgaben und Fehler —
+# und nicht nur das, was borg schreibt.
+mkdir -p "$(dirname "$LOGFILE")"
+exec > >(tee -a "$LOGFILE") 2>&1
+
 log() { echo "[$(date +%Y-%m-%d\ %H:%M:%S)] $*"; }
+
+log "==> Log-Datei: ${LOGFILE}"
 
 MODE="${1:-}"; shift || true
 
@@ -58,7 +66,9 @@ case "$MODE" in
     borg list "$REPO"
     ;;
   contents)
-    borg list "${REPO}::${LATEST}" | less
+    # less würde bei umgelenktem stdout nicht mehr seitenweise blättern;
+    # darum direkt ausgeben (geht via tee ohnehin auch ins LOGFILE).
+    borg list "${REPO}::${LATEST}"
     ;;
   dry-run)
     mkdir -p "$TARGET"; cd "$TARGET"
@@ -74,7 +84,7 @@ case "$MODE" in
     # --numeric-ids: UIDs/GIDs numerisch erhalten, kein Name-Mapping
     #   (borg < 1.2: stattdessen --numeric-owner)
     borg extract --numeric-ids --list --progress \
-      "${REPO}::${LATEST}" "$@" 2>&1 | tee "$LOGFILE"
+      "${REPO}::${LATEST}" "$@"
     log "==> Inhalt liegt unter ${TARGET}/ (Pfade ohne führenden /)."
     ;;
   *)
