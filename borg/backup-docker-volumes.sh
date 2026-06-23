@@ -2,8 +2,7 @@
 set -euo pipefail
 
 while read -r volume; do
-    # Log nur auf STDERR
-    echo "Speichere Docker-Volume $volume" >&2
+    echo "Speichere Docker-Volume $volume nach Borg"
 
     docker run --rm \
         -v "$volume":/input:ro \
