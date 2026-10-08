@@ -58,7 +58,8 @@ def ausfuehren_befehle_aus_datei(datei):
                 befehl = line.strip()  # Entferne Leerzeichen und Zeilenumbrüche
                 if not befehl.startswith('#'):
                     try:
-                        result = subprocess.run(befehl, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                        # bash statt /bin/sh (dash), damit pipefail überall verfügbar ist
+                        result = subprocess.run(['/bin/bash', '-o', 'pipefail', '-c', befehl], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                         logger.info("exec", extra={'cmd': befehl, 'stdout': result.stdout.strip(), 'stderr': result.stderr.strip(), 'exitcode': result.returncode})
                     except subprocess.CalledProcessError as e:
                         logger.error("exec", extra={'cmd': befehl, 'stdout': e.stdout.strip(), 'stderr': e.stderr.strip(), 'exitcode': e.returncode})
